@@ -12,7 +12,7 @@ from sanic import response
 from sanic.exceptions import abort
 from sanic.views import HTTPMethodView
 
-from .utils import get_db_info
+from csvapi.utils import get_db_info
 
 connections = threading.local()
 # XXX is this a right place?
@@ -80,10 +80,10 @@ class TableView(HTTPMethodView):
 
     async def data(self, request, db_info):
         limit = request.args.get('limit', ROWS_LIMIT)
-        sql = 'SELECT rowid, * FROM {table_name} ORDER BY rowid LIMIT {limit}'
+        sql = 'SELECT rowid, * FROM "{t}" ORDER BY rowid LIMIT {l}'
         sql = sql.format(**{
-            'table_name': db_info['table_name'],
-            'limit': limit,
+            't': db_info['table_name'],
+            'l': limit,
         })
         rows, description = await self.execute(sql, db_info)
         columns = [r[0] for r in description]

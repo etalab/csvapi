@@ -1,7 +1,7 @@
 import agate
 import agatesql  # noqa
 
-from .utils import get_db_info
+from csvapi.utils import get_db_info
 
 SNIFF_LIMIT = 2048
 
@@ -15,7 +15,7 @@ def csv_to_sql(filename, _hash, storage):
     table.to_sql(db_info['dsn'], db_info['db_name'], overwrite=True)
 
 
-def parse(filename, _hash, storage='.'):
+async def parse(filename, _hash, storage='.'):
     encoding = 'utf-8'
     try:
         infile = open(filename)

@@ -1,5 +1,11 @@
 from setuptools import setup, find_packages
 
+TESTS_REQUIRE = [
+    'requests-mock==1.4.0',
+    'pytest==3.5.0',
+    'aiohttp==3.1.3',
+]
+
 setup(
     name='csvapi',
     description='An instant JSON API for your CSV',
@@ -23,7 +29,10 @@ setup(
         [console_scripts]
         csvapi=csvapi.cli:cli
     ''',
-    tests_require=[],
+    tests_require=TESTS_REQUIRE,
+    extras_require={
+        'test':  TESTS_REQUIRE,
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',

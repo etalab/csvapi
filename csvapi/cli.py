@@ -1,7 +1,7 @@
 import click
 from click_default_group import DefaultGroup
 
-from .webservice import app
+from csvapi.webservice import app
 
 
 @click.group(cls=DefaultGroup, default='serve', default_if_no_args=True)

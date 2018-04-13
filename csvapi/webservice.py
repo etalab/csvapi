@@ -13,13 +13,14 @@ from sanic import response
 from sanic.exceptions import ServerError, abort
 from sanic.request import RequestParameters
 
-from .tableview import TableView
-from .parser import parse
+from csvapi.tableview import TableView
+from csvapi.parser import parse
 
 app = Sanic()
 app.add_route(TableView.as_view(), '/api/<_hash>')
 
 
+# TODO create a ParseView and put this and parser.parse into it
 @app.route('/apify')
 async def apify(request):
     url = request.args.get('url')
@@ -33,7 +34,7 @@ async def apify(request):
     tmp.close()
     _hash = hashlib.md5(url.encode('utf-8')).hexdigest()
     try:
-        parse(tmp.name, _hash, storage=app.config.DB_ROOT_DIR)
+        await parse(tmp.name, _hash, storage=app.config.DB_ROOT_DIR)
     finally:
         os.unlink(tmp.name)
     return response.json({
