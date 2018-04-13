@@ -4,7 +4,7 @@
 
 ## Installation
 
-Requires Python 3.6+.
+Requires Python 3.5+.
 
 ```
 python3 -m venv pyenv && . pyenv/bin/activate
