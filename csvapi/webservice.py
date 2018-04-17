@@ -42,4 +42,4 @@ async def apify(request):
         'endpoint': '{}://{}/api/{}'.format(
             request.scheme, request.host, _hash
         ),
-    }, dumps=json.dumps)
+    }, dumps=json.dumps, headers={'Access-Control-Allow-Origin': '*'})

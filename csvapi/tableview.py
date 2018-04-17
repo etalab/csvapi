@@ -116,4 +116,4 @@ class TableView(HTTPMethodView):
             'query_ms': (end - start) * 1000,
             'rows': data['rows'],
             'columns': data['columns'],
-        })
+        }, headers={'Access-Control-Allow-Origin': '*'})
