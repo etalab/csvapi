@@ -23,10 +23,13 @@ def cli():
               help='Enable debug mode - useful for development')
 @click.option('--reload', is_flag=True,
               help='Automatically reload if code change detected')
+@click.option('--cache/--no-cache', default=True,
+              help='Do not parse CSV again if DB already exists')
 @cli.command()
-def serve(dbs, host, port, debug, reload):
+def serve(dbs, host, port, debug, reload, cache):
     if reload:
         import hupper
         hupper.start_reloader('csvapi.cli.serve')
     app.config.DB_ROOT_DIR = dbs
+    app.config.CSV_CACHE_ENABLED = cache
     app.run(host=host, port=port, debug=debug)
