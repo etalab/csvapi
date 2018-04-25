@@ -20,7 +20,7 @@ executor = futures.ThreadPoolExecutor(max_workers=3)
 
 ROWS_LIMIT = 100
 SQL_TIME_LIMIT_MS = 1000
-_SHAPE = 'compact'
+DEFAULT_SHAPE = 'compact'
 
 
 def prepare_connection(conn):
@@ -112,7 +112,7 @@ class TableView(HTTPMethodView):
             abort(400, data)
         end = time.time()
 
-        _shape = request.args.get('_shape', _SHAPE)
+        _shape = request.args.get('_shape', DEFAULT_SHAPE)
         if _shape == 'objects':
             # Format data as an array of objects for the client
             rows = []
