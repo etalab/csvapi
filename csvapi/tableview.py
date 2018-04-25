@@ -20,6 +20,7 @@ executor = futures.ThreadPoolExecutor(max_workers=3)
 
 ROWS_LIMIT = 100
 SQL_TIME_LIMIT_MS = 1000
+_SHAPE = 'compact'
 
 
 def prepare_connection(conn):
@@ -111,14 +112,18 @@ class TableView(HTTPMethodView):
             abort(400, data)
         end = time.time()
 
-        # Format data as an array of objects for the client
-        obj = []
-        for row in data['rows']:
-            obj.append(dict(zip(data['columns'],row)))
+        _shape = request.args.get('_shape', _SHAPE)
+        if _shape == 'objects':
+            # Format data as an array of objects for the client
+            rows = []
+            for row in data['rows']:
+                rows.append(dict(zip(data['columns'], row)))
+        elif _shape == 'compact':
+            rows = data['rows']
 
         return response.json({
             'ok': True,
             'query_ms': (end - start) * 1000,
-            'rows': obj,
+            'rows': rows,
             'columns': data['columns'],
         }, headers={'Access-Control-Allow-Origin': '*'})
