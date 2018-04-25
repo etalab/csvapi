@@ -111,9 +111,14 @@ class TableView(HTTPMethodView):
             abort(400, data)
         end = time.time()
 
+        # Format data as an array of objects for the client
+        obj = []
+        for row in data['rows']:
+            obj.append(dict(zip(data['columns'],row)))
+
         return response.json({
             'ok': True,
             'query_ms': (end - start) * 1000,
-            'rows': data['rows'],
+            'rows': obj,
             'columns': data['columns'],
         }, headers={'Access-Control-Allow-Origin': '*'})
