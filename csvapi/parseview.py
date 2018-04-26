@@ -8,6 +8,7 @@ import tempfile
 from pathlib import Path
 
 import requests
+import validators
 
 from sanic import response
 from sanic.exceptions import abort
@@ -37,6 +38,8 @@ class ParseView(HTTPMethodView):
         url = request.args.get('url')
         if not url:
             abort(400, 'Missing "url" query string variable.')
+        if not validators.url(url):
+            abort(400, 'Maformed "url" parameter.')
         _hash = hashlib.md5(url.encode('utf-8')).hexdigest()
 
         def do_parse_in_thread():
