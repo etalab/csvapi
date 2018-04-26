@@ -128,3 +128,18 @@ def test_api_objects_shape(client, rmock, csv):
             'col a': 'data ª2',
             'col b': 'data b2'
     }]
+
+
+def test_api_objects_norowid(client, rmock, csv):
+    content = csv.replace('<sep>', ';').encode('utf-8')
+    rmock.get(MOCK_CSV_URL, content=content)
+    client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    _, res = client.get('/api/{}?_shape=objects&_norowid=1'.format(MOCK_CSV_HASH))
+    assert res.status == 200
+    assert res.json['rows'] == [{
+            'col a': 'data à1',
+            'col b': 'data b1'
+        }, {
+            'col a': 'data ª2',
+            'col b': 'data b2'
+    }]

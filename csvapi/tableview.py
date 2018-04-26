@@ -75,9 +75,10 @@ class TableView(HTTPMethodView):
             executor, sql_operation_in_thread
         )
 
-    async def data(self, request, db_info):
+    async def data(self, request, db_info, rowid=True):
         limit = request.args.get('limit', ROWS_LIMIT)
-        sql = 'SELECT rowid, * FROM "{}" ORDER BY rowid LIMIT :l'.format(db_info['table_name'])
+        cols = 'rowid, *' if rowid else '*'
+        sql = 'SELECT {} FROM "{}" ORDER BY rowid LIMIT :l'.format(cols, db_info['table_name'])
         rows, description = await self.execute(
             request.app.executor, sql, db_info,
             params={'l': limit}
@@ -96,9 +97,12 @@ class TableView(HTTPMethodView):
         p = Path(db_info['db_path'])
         if not p.exists():
             return api_error('Database has probably been removed.', 404)
+
+        rowid = not request.args.get('_norowid')
+
         start = time.time()
         try:
-            data = await self.data(request, db_info)
+            data = await self.data(request, db_info, rowid=rowid)
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as e:
             return api_error(str(e), 400)
         end = time.time()
