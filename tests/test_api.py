@@ -19,6 +19,7 @@ def rmock():
 @pytest.fixture
 def app():
     csvapi_app.config.DB_ROOT_DIR = DB_ROOT_DIR
+    csvapi_app.config.CSV_CACHE_ENABLED = False
     yield csvapi_app
     [db.unlink() for db in Path(DB_ROOT_DIR).glob('*.db')]
 
@@ -33,6 +34,14 @@ def csv():
     return '''col a<sep>col b
 data à1<sep>data b1
 data ª2<sep>data b2
+'''
+
+
+@pytest.fixture
+def csv_col_mismatch():
+    return '''col a<sep>col b
+data à1<sep>data b1<sep>2
+data ª2<sep>data b2<sep>4<sep>
 '''
 
 
@@ -57,6 +66,13 @@ def test_apify(rmock, csv, client):
     assert db_path.exists()
 
 
+def test_apify_col_mismatch(rmock, csv_col_mismatch, client):
+    rmock.get(MOCK_CSV_URL, content=csv_col_mismatch.replace('<sep>', ';').encode('utf-8'))
+    req, res = client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    assert res.status == 200
+    assert res.json['ok']
+
+
 @pytest.mark.parametrize('separator', [';', ',', '\t'])
 @pytest.mark.parametrize('encoding', ['utf-8', 'iso-8859-15', 'iso-8859-1'])
 def test_api(client, rmock, csv, separator, encoding):
@@ -70,3 +86,45 @@ def test_api(client, rmock, csv, separator, encoding):
         [1, 'data à1', 'data b1'],
         [2, 'data ª2', 'data b2'],
     ]
+
+
+def test_api_limit(client, rmock, csv):
+    content = csv.replace('<sep>', ';').encode('utf-8')
+    rmock.get(MOCK_CSV_URL, content=content)
+    client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    _, res = client.get('/api/{}?limit=1'.format(MOCK_CSV_HASH))
+    assert res.status == 200
+    assert len(res.json['rows']) == 1
+
+
+def test_api_wrong_limit(client, rmock, csv):
+    content = csv.replace('<sep>', ';').encode('utf-8')
+    rmock.get(MOCK_CSV_URL, content=content)
+    client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    _, res = client.get('/api/{}?limit=toto'.format(MOCK_CSV_HASH))
+    assert res.status == 400
+
+
+def test_api_wrong_shape(client, rmock, csv):
+    content = csv.replace('<sep>', ';').encode('utf-8')
+    rmock.get(MOCK_CSV_URL, content=content)
+    client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    _, res = client.get('/api/{}?_shape=toto'.format(MOCK_CSV_HASH))
+    assert res.status == 400
+
+
+def test_api_objects_shape(client, rmock, csv):
+    content = csv.replace('<sep>', ';').encode('utf-8')
+    rmock.get(MOCK_CSV_URL, content=content)
+    client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    _, res = client.get('/api/{}?_shape=objects'.format(MOCK_CSV_HASH))
+    assert res.status == 200
+    assert res.json['rows'] == [{
+            'rowid': 1,
+            'col a': 'data à1',
+            'col b': 'data b1'
+        }, {
+            'rowid': 2,
+            'col a': 'data ª2',
+            'col b': 'data b2'
+    }]

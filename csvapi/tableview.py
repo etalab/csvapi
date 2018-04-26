@@ -8,10 +8,9 @@ import asyncio
 import threading
 
 from sanic import response
-from sanic.exceptions import abort
 from sanic.views import HTTPMethodView
 
-from csvapi.utils import get_db_info
+from csvapi.utils import get_db_info, api_error
 
 connections = threading.local()
 
@@ -78,12 +77,11 @@ class TableView(HTTPMethodView):
 
     async def data(self, request, db_info):
         limit = request.args.get('limit', ROWS_LIMIT)
-        sql = 'SELECT rowid, * FROM "{t}" ORDER BY rowid LIMIT {l}'
-        sql = sql.format(**{
-            't': db_info['table_name'],
-            'l': limit,
-        })
-        rows, description = await self.execute(request.app.executor, sql, db_info)
+        sql = 'SELECT rowid, * FROM "{}" ORDER BY rowid LIMIT :l'.format(db_info['table_name'])
+        rows, description = await self.execute(
+            request.app.executor, sql, db_info,
+            params={'l': limit}
+        )
         columns = [r[0] for r in description]
         return {
             'columns': columns,
@@ -97,16 +95,12 @@ class TableView(HTTPMethodView):
         )
         p = Path(db_info['db_path'])
         if not p.exists():
-            abort(404, 'Database has probably been removed.')
+            return api_error('Database has probably been removed.', 404)
         start = time.time()
         try:
             data = await self.data(request, db_info)
-        except (sqlite3.OperationalError) as e:
-            data = {
-                'ok': False,
-                'error': str(e),
-            }
-            abort(400, data)
+        except (sqlite3.OperationalError, sqlite3.IntegrityError) as e:
+            return api_error(str(e), 400)
         end = time.time()
 
         _shape = request.args.get('_shape', DEFAULT_SHAPE)
@@ -117,6 +111,8 @@ class TableView(HTTPMethodView):
                 rows.append(dict(zip(data['columns'], row)))
         elif _shape == 'compact':
             rows = data['rows']
+        else:
+            return api_error('Unknown _shape: {}'.format(_shape), 400)
 
         return response.json({
             'ok': True,

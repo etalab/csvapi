@@ -11,11 +11,10 @@ import requests
 import validators
 
 from sanic import response
-from sanic.exceptions import abort
 from sanic.views import HTTPMethodView
 
 from csvapi.parser import parse
-from csvapi.utils import get_db_info
+from csvapi.utils import get_db_info, api_error
 
 log = logging.getLogger('__name__')
 
@@ -37,9 +36,9 @@ class ParseView(HTTPMethodView):
     async def get(self, request):
         url = request.args.get('url')
         if not url:
-            abort(400, 'Missing "url" query string variable.')
+            return api_error('Missing url query string variable.', 400)
         if not validators.url(url):
-            abort(400, 'Maformed "url" parameter.')
+            return api_error('Malformed url parameter.', 400)
         _hash = hashlib.md5(url.encode('utf-8')).hexdigest()
 
         def do_parse_in_thread():
@@ -51,6 +50,8 @@ class ParseView(HTTPMethodView):
             tmp.close()
             try:
                 parse(tmp.name, _hash, storage=request.app.config.DB_ROOT_DIR)
+            except Exception as e:
+                return api_error('Error parsing CSV', details=str(e))
             finally:
                 os.unlink(tmp.name)
 

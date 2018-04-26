@@ -3,6 +3,8 @@ from click_default_group import DefaultGroup
 
 from csvapi.webservice import app
 
+RESPONSE_TIMEOUT = 5 * 60  # in seconds
+
 
 @click.group(cls=DefaultGroup, default='serve', default_if_no_args=True)
 @click.version_option()
@@ -35,4 +37,5 @@ def serve(dbs, host, port, debug, reload, cache, max_workers):
     app.config.DB_ROOT_DIR = dbs
     app.config.CSV_CACHE_ENABLED = cache
     app.config.MAX_WORKERS = max_workers
+    app.config.RESPONSE_TIMEOUT = RESPONSE_TIMEOUT
     app.run(host=host, port=port, debug=debug)
