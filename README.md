@@ -111,7 +111,7 @@ It will return:
 
 The `_norowid` argument is used to avoid rowids in the returned data:
 
-`/api/<md5-url-hash>?_norowid=1`
+`/api/<md5-url-hash>?_shape=objects&_norowid=1`
 
 ```json
 {
