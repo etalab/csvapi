@@ -5,7 +5,6 @@ import logging
 import os
 import tempfile
 
-from concurrent import futures
 from pathlib import Path
 
 import requests
@@ -18,7 +17,6 @@ from csvapi.parser import parse
 from csvapi.utils import get_db_info
 
 log = logging.getLogger('__name__')
-executor = futures.ThreadPoolExecutor(max_workers=3)
 
 
 class ParseView(HTTPMethodView):
@@ -55,7 +53,7 @@ class ParseView(HTTPMethodView):
 
         if not self.already_exists(request.app, _hash):
             await asyncio.get_event_loop().run_in_executor(
-                executor, do_parse_in_thread
+                request.app.executor, do_parse_in_thread
             )
         else:
             log.debug('{}.db already exists, skipping parse.'.format(_hash))

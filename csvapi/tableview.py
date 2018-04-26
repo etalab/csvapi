@@ -2,7 +2,6 @@ import sqlite3
 import time
 
 from contextlib import contextmanager
-from concurrent import futures
 from pathlib import Path
 
 import asyncio
@@ -15,8 +14,6 @@ from sanic.views import HTTPMethodView
 from csvapi.utils import get_db_info
 
 connections = threading.local()
-# XXX is this a right place?
-executor = futures.ThreadPoolExecutor(max_workers=3)
 
 ROWS_LIMIT = 100
 SQL_TIME_LIMIT_MS = 1000
@@ -50,7 +47,7 @@ def sqlite_timelimit(conn, ms):
 
 class TableView(HTTPMethodView):
 
-    async def execute(self, sql, db_info, params=None):
+    async def execute(self, executor, sql, db_info, params=None):
         """Executes sql against db_name in a thread"""
         def sql_operation_in_thread():
             conn = getattr(connections, db_info['db_name'], None)
@@ -86,7 +83,7 @@ class TableView(HTTPMethodView):
             't': db_info['table_name'],
             'l': limit,
         })
-        rows, description = await self.execute(sql, db_info)
+        rows, description = await self.execute(request.app.executor, sql, db_info)
         columns = [r[0] for r in description]
         return {
             'columns': columns,

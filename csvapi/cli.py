@@ -25,11 +25,14 @@ def cli():
               help='Automatically reload if code change detected')
 @click.option('--cache/--no-cache', default=True,
               help='Do not parse CSV again if DB already exists')
+@click.option('-w', '--max-workers', default=3,
+              help='Max number of ThreadPoolExecutor workers')
 @cli.command()
-def serve(dbs, host, port, debug, reload, cache):
+def serve(dbs, host, port, debug, reload, cache, max_workers):
     if reload:
         import hupper
         hupper.start_reloader('csvapi.cli.serve')
     app.config.DB_ROOT_DIR = dbs
     app.config.CSV_CACHE_ENABLED = cache
+    app.config.MAX_WORKERS = max_workers
     app.run(host=host, port=port, debug=debug)
