@@ -107,6 +107,36 @@ It will return:
 }
 ```
 
+#### `_norowid`
+
+The `_norowid` argument is used to avoid rowids in the returned data:
+
+`/api/<md5-url-hash>?_norowid=1`
+
+```json
+{
+    "ok": true,
+    "query_ms": 2.681016922,
+    "rows": [
+    {
+        "Mission": "Justice",
+        "Programme": "0101",
+        "Consommation de CP": 57663310
+    },
+    {
+        "Mission": "Justice",
+        "Programme": "0101",
+        "Consommation de CP": 2255129
+    },
+    {
+        "Mission": "Justice",
+        "Programme": "0101",
+        "Consommation de CP": 36290
+    }],
+    "columns": ["Mission", "Programme", "Consommation de CP"]
+}
+```
+
 ## Credits
 
 Inspired by the excellent [Datasette](https://github.com/simonw/datasette).
