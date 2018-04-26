@@ -25,6 +25,7 @@ setup(
         'agate==1.6.1',
         'agate-sql==0.5.3',
         'validators==0.12.1',
+        'Sanic-Cors==0.9.3',
     ],
     entry_points='''
         [console_scripts]

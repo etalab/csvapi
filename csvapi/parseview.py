@@ -21,11 +21,6 @@ log = logging.getLogger('__name__')
 
 class ParseView(HTTPMethodView):
 
-    async def options(self, request, *args, **kwargs):
-        r = response.text('ok')
-        r.headers['Access-Control-Allow-Origin'] = '*'
-        return r
-
     def already_exists(self, app, _hash):
         cache_enabled = app.config.get('CSV_CACHE_ENABLED')
         if not cache_enabled:
@@ -66,4 +61,4 @@ class ParseView(HTTPMethodView):
             'endpoint': '{}://{}/api/{}'.format(
                 request.scheme, request.host, _hash
             ),
-        }, dumps=json.dumps, headers={'Access-Control-Allow-Origin': '*'})
+        }, dumps=json.dumps)
