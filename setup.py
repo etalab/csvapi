@@ -24,6 +24,7 @@ setup(
         'requests==2.18.4',
         'agate==1.6.1',
         'agate-sql==0.5.3',
+        'validators==0.12.1',
     ],
     entry_points='''
         [console_scripts]

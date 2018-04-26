@@ -36,10 +36,18 @@ data ª2<sep>data b2
 '''
 
 
-def test_apify(rmock, csv, client):
-    rmock.get(MOCK_CSV_URL, content=csv.encode('utf-8'))
+def test_apify_no_url(rmock, csv, client):
     _, res = client.get('/apify')
     assert res.status == 400
+
+
+def test_apify_wrong_url(rmock, csv, client):
+    _, res = client.get('/apify?url=notanurl')
+    assert res.status == 400
+
+
+def test_apify(rmock, csv, client):
+    rmock.get(MOCK_CSV_URL, content=csv.encode('utf-8'))
     req, res = client.get('/apify?url={}'.format(MOCK_CSV_URL))
     assert res.status == 200
     assert res.json['ok']
