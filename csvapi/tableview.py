@@ -16,7 +16,7 @@ connections = threading.local()
 
 ROWS_LIMIT = 100
 SQL_TIME_LIMIT_MS = 1000
-DEFAULT_SHAPE = 'compact'
+DEFAULT_SHAPE = 'lists'
 
 
 def prepare_connection(conn):
@@ -76,7 +76,7 @@ class TableView(HTTPMethodView):
         )
 
     async def data(self, request, db_info, rowid=True):
-        limit = request.args.get('limit', ROWS_LIMIT)
+        limit = request.args.get('_size', ROWS_LIMIT)
         cols = 'rowid, *' if rowid else '*'
         sql = 'SELECT {} FROM "{}" ORDER BY rowid LIMIT :l'.format(cols, db_info['table_name'])
         rows, description = await self.execute(
@@ -98,7 +98,7 @@ class TableView(HTTPMethodView):
         if not p.exists():
             return api_error('Database has probably been removed.', 404)
 
-        rowid = not request.args.get('_norowid')
+        rowid = not (request.args.get('_rowid') == 'hide')
 
         start = time.time()
         try:
@@ -113,7 +113,7 @@ class TableView(HTTPMethodView):
             rows = []
             for row in data['rows']:
                 rows.append(dict(zip(data['columns'], row)))
-        elif _shape == 'compact':
+        elif _shape == 'lists':
             rows = data['rows']
         else:
             return api_error('Unknown _shape: {}'.format(_shape), 400)

@@ -92,7 +92,7 @@ def test_api_limit(client, rmock, csv):
     content = csv.replace('<sep>', ';').encode('utf-8')
     rmock.get(MOCK_CSV_URL, content=content)
     client.get('/apify?url={}'.format(MOCK_CSV_URL))
-    _, res = client.get('/api/{}?limit=1'.format(MOCK_CSV_HASH))
+    _, res = client.get('/api/{}?_size=1'.format(MOCK_CSV_HASH))
     assert res.status == 200
     assert len(res.json['rows']) == 1
 
@@ -101,7 +101,7 @@ def test_api_wrong_limit(client, rmock, csv):
     content = csv.replace('<sep>', ';').encode('utf-8')
     rmock.get(MOCK_CSV_URL, content=content)
     client.get('/apify?url={}'.format(MOCK_CSV_URL))
-    _, res = client.get('/api/{}?limit=toto'.format(MOCK_CSV_HASH))
+    _, res = client.get('/api/{}?_size=toto'.format(MOCK_CSV_HASH))
     assert res.status == 400
 
 
@@ -134,7 +134,7 @@ def test_api_objects_norowid(client, rmock, csv):
     content = csv.replace('<sep>', ';').encode('utf-8')
     rmock.get(MOCK_CSV_URL, content=content)
     client.get('/apify?url={}'.format(MOCK_CSV_URL))
-    _, res = client.get('/api/{}?_shape=objects&_norowid=1'.format(MOCK_CSV_HASH))
+    _, res = client.get('/api/{}?_shape=objects&_rowid=hide'.format(MOCK_CSV_HASH))
     assert res.status == 200
     assert res.json['rows'] == [{
             'col a': 'data à1',
