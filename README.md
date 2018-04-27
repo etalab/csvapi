@@ -59,6 +59,18 @@ This will limit the query to a certain number of rows. For instance to get only 
 
 `/api/<md5-url-hash>?_size=250`
 
+#### `_sort` and `_sort_desc`
+
+Use those to sort by a column. `sort` will sort by ascending order, `sort_desc` by descending order.
+
+`/api/<md5-url-hash>?_sort=<column-name>`
+
+#### `_offset`
+
+Use this to add on offset. Combined with `_size` it allows pagination.
+
+`/api/<md5-url-hash>?_size=1&_offset=1`
+
 #### `_shape`
 
 **default**: `lists`
@@ -142,6 +154,7 @@ The `_rowid` argument is used to display or hide rowids in the returned data. Us
     "columns": ["Mission", "Programme", "Consommation de CP"]
 }
 ```
+
 
 ## Credits
 
