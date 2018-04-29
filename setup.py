@@ -4,6 +4,7 @@ TESTS_REQUIRE = [
     'requests-mock==1.4.0',
     'pytest==3.5.0',
     'aiohttp==3.1.3',
+    'pytest-asyncio==0.8.0',
 ]
 
 setup(
@@ -19,14 +20,13 @@ setup(
     install_requires=[
         'click==6.7',
         'click_default_group==1.2',
-        'Sanic==0.7.0',
         'hupper==1.0',
         'requests==2.18.4',
         'agate==1.6.1',
         'agate-sql==0.5.3',
         'validators==0.12.1',
-        'Sanic-Cors==0.9.3',
         'agate-excel==0.2.2',
+        'Quart==0.5.0',
     ],
     entry_points='''
         [console_scripts]

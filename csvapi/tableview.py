@@ -7,10 +7,10 @@ from pathlib import Path
 import asyncio
 import threading
 
-from sanic import response
-from sanic.views import HTTPMethodView
+from quart import request, jsonify, current_app
+from quart.views import MethodView
 
-from csvapi.utils import get_db_info, api_error
+from csvapi.utils import get_db_info, api_error, get_executor
 
 connections = threading.local()
 
@@ -44,9 +44,12 @@ def sqlite_timelimit(conn, ms):
     conn.set_progress_handler(None, n)
 
 
-class TableView(HTTPMethodView):
+class TableView(MethodView):
 
-    async def execute(self, executor, sql, db_info, params=None):
+    async def options(self):
+        pass
+
+    async def execute(self, sql, db_info, params=None):
         """Executes sql against db_name in a thread"""
         def sql_operation_in_thread():
             conn = getattr(connections, db_info['db_name'], None)
@@ -72,10 +75,10 @@ class TableView(HTTPMethodView):
             return rows, cursor.description
 
         return await asyncio.get_event_loop().run_in_executor(
-            executor, sql_operation_in_thread
+            get_executor(), sql_operation_in_thread
         )
 
-    async def data(self, request, db_info, rowid=True):
+    async def data(self, db_info, rowid=True):
         limit = request.args.get('_size', ROWS_LIMIT)
         rowid = not (request.args.get('_rowid') == 'hide')
         sort = request.args.get('_sort')
@@ -94,8 +97,7 @@ class TableView(HTTPMethodView):
         if offset:
             sql += ' OFFSET :o'
         rows, description = await self.execute(
-            request.app.executor, sql, db_info,
-            params={'l': limit, 'o': offset}
+            sql, db_info, params={'l': limit, 'o': offset}
         )
         columns = [r[0] for r in description]
         return {
@@ -103,10 +105,10 @@ class TableView(HTTPMethodView):
             'rows': list(rows),
         }
 
-    async def get(self, request, _hash):
+    async def get(self, urlhash):
         db_info = get_db_info(
-            request.app.config.get('DB_ROOT_DIR'),
-            _hash
+            current_app.config.get('DB_ROOT_DIR'),
+            urlhash
         )
         p = Path(db_info['db_path'])
         if not p.exists():
@@ -114,7 +116,7 @@ class TableView(HTTPMethodView):
 
         start = time.time()
         try:
-            data = await self.data(request, db_info)
+            data = await self.data(db_info)
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as e:
             return api_error(str(e), 400)
         end = time.time()
@@ -130,7 +132,7 @@ class TableView(HTTPMethodView):
         else:
             return api_error('Unknown _shape: {}'.format(_shape), 400)
 
-        return response.json({
+        return jsonify({
             'ok': True,
             'query_ms': (end - start) * 1000,
             'rows': rows,

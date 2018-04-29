@@ -31,11 +31,11 @@ def cli():
               help='Max number of ThreadPoolExecutor workers')
 @cli.command()
 def serve(dbs, host, port, debug, reload, cache, max_workers):
-    if reload:
-        import hupper
-        hupper.start_reloader('csvapi.cli.serve')
-    app.config.DB_ROOT_DIR = dbs
-    app.config.CSV_CACHE_ENABLED = cache
-    app.config.MAX_WORKERS = max_workers
-    app.config.RESPONSE_TIMEOUT = RESPONSE_TIMEOUT
-    app.run(host=host, port=port, debug=debug)
+    app.config.update({
+        'DB_ROOT_DIR': dbs,
+        'CSV_CACHE_ENABLED': cache,
+        'MAX_WORKERS': max_workers,
+        # TODO this probably does not exist in Quart
+        'RESPONSE_TIMEOUT': RESPONSE_TIMEOUT,
+    })
+    app.run(host=host, port=port, debug=debug, use_reloader=reload)
