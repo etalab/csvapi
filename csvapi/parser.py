@@ -13,11 +13,13 @@ SNIFF_LIMIT = 2048
 
 
 def is_binary(filepath):
-    return 'text/plain' not in os.popen('file %s -b --mime-type' % (filepath)).read().lower()
+    with os.popen('file {} -b --mime-type'.format(filepath)) as proc:
+        return 'text/plain' not in proc.read().lower()
 
 
 def detect_encoding(filepath):
-    return os.popen('file %s -b --mime-encoding' % (filepath)).read()
+    with os.popen('file {} -b --mime-encoding'.format(filepath)) as proc:
+        return proc.read()
 
 
 def from_csv(filepath, encoding='utf-8'):
