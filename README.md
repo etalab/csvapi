@@ -1,10 +1,10 @@
 # csvapi
 
-"Instantly" publish an API for a CSV hosted anywhere on the internet.
+"Instantly" publish an API for a CSV hosted anywhere on the internet. Also supports Excel files.
 
 ## Installation
 
-Requires Python 3.5+.
+Requires Python 3.5+ and a Unix OS with the `file` command available.
 
 ```
 python3 -m venv pyenv && . pyenv/bin/activate
