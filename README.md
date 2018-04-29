@@ -51,13 +51,29 @@ This queries a previously converted API file and returns the first 100 rows like
 
 Some parameters can be used in the query string.
 
-#### `limit`
+#### `_size`
+
+**default**: `100`
 
 This will limit the query to a certain number of rows. For instance to get only 250 rows:
 
-`/api/<md5-url-hash>?limit=250`
+`/api/<md5-url-hash>?_size=250`
+
+#### `_sort` and `_sort_desc`
+
+Use those to sort by a column. `sort` will sort by ascending order, `sort_desc` by descending order.
+
+`/api/<md5-url-hash>?_sort=<column-name>`
+
+#### `_offset`
+
+Use this to add on offset. Combined with `_size` it allows pagination.
+
+`/api/<md5-url-hash>?_size=1&_offset=1`
 
 #### `_shape`
+
+**default**: `lists`
 
 The `_shape` argument is used to specify the format output of the json. It can take the value `objects` to get an array of objects instead of an array of arrays:
 
@@ -107,11 +123,13 @@ It will return:
 }
 ```
 
-#### `_norowid`
+#### `_rowid`
 
-The `_norowid` argument is used to avoid rowids in the returned data:
+**default**: `show`
 
-`/api/<md5-url-hash>?_shape=objects&_norowid=1`
+The `_rowid` argument is used to display or hide rowids in the returned data. Use `_rowid=hide` to hide.
+
+`/api/<md5-url-hash>?_shape=objects&_rowid=hide`
 
 ```json
 {
@@ -136,6 +154,7 @@ The `_norowid` argument is used to avoid rowids in the returned data:
     "columns": ["Mission", "Programme", "Consommation de CP"]
 }
 ```
+
 
 ## Credits
 

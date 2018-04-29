@@ -16,7 +16,7 @@ connections = threading.local()
 
 ROWS_LIMIT = 100
 SQL_TIME_LIMIT_MS = 1000
-DEFAULT_SHAPE = 'compact'
+DEFAULT_SHAPE = 'lists'
 
 
 def prepare_connection(conn):
@@ -76,12 +76,26 @@ class TableView(HTTPMethodView):
         )
 
     async def data(self, request, db_info, rowid=True):
-        limit = request.args.get('limit', ROWS_LIMIT)
+        limit = request.args.get('_size', ROWS_LIMIT)
+        rowid = not (request.args.get('_rowid') == 'hide')
+        sort = request.args.get('_sort')
+        sort_desc = request.args.get('_sort_desc')
+        offset = request.args.get('_offset')
+
         cols = 'rowid, *' if rowid else '*'
-        sql = 'SELECT {} FROM "{}" ORDER BY rowid LIMIT :l'.format(cols, db_info['table_name'])
+        sql = 'SELECT {} FROM [{}]'.format(cols, db_info['table_name'])
+        if sort:
+            sql += ' ORDER BY [{}]'.format(sort)
+        elif sort_desc:
+            sql += ' ORDER BY [{}] DESC'.format(sort_desc)
+        else:
+            sql += ' ORDER BY rowid'
+        sql += ' LIMIT :l'
+        if offset:
+            sql += ' OFFSET :o'
         rows, description = await self.execute(
             request.app.executor, sql, db_info,
-            params={'l': limit}
+            params={'l': limit, 'o': offset}
         )
         columns = [r[0] for r in description]
         return {
@@ -98,11 +112,9 @@ class TableView(HTTPMethodView):
         if not p.exists():
             return api_error('Database has probably been removed.', 404)
 
-        rowid = not request.args.get('_norowid')
-
         start = time.time()
         try:
-            data = await self.data(request, db_info, rowid=rowid)
+            data = await self.data(request, db_info)
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as e:
             return api_error(str(e), 400)
         end = time.time()
@@ -113,7 +125,7 @@ class TableView(HTTPMethodView):
             rows = []
             for row in data['rows']:
                 rows.append(dict(zip(data['columns'], row)))
-        elif _shape == 'compact':
+        elif _shape == 'lists':
             rows = data['rows']
         else:
             return api_error('Unknown _shape: {}'.format(_shape), 400)
