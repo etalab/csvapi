@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -185,4 +186,20 @@ def test_api_sort_desc(client, rmock, csv):
     assert res.json['rows'] == [
         [2, 'data ª2', 'data b2', 'a'],
         [1, 'data à1', 'data b1', 'z'],
+    ]
+
+
+@pytest.mark.parametrize('extension', ['xls', 'xlsx'])
+def test_api_excel(client, rmock, csv, extension):
+    here = os.path.dirname(os.path.abspath(__file__))
+    content = open('{}/samples/test.{}'.format(here, extension), 'rb')
+    rmock.get(MOCK_CSV_URL, content=content.read())
+    content.close()
+    client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    _, res = client.get('/api/{}'.format(MOCK_CSV_HASH))
+    assert res.status == 200
+    assert res.json['columns'] == ['rowid', 'col a', 'col b', 'col c']
+    assert res.json['rows'] == [
+        [1, 'a1', 'b1', 'z'],
+        [2, 'a2', 'b2', 'a'],
     ]
