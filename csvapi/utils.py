@@ -1,10 +1,7 @@
-import logging
-
 from concurrent import futures
 
-from quart import current_app
+from quart import current_app as app
 
-log = logging.getLogger(__name__)
 executor = None
 
 
@@ -21,6 +18,7 @@ def get_db_info(db_root_dir, _hash):
 def get_executor():
     global executor
     if not executor:
-        max_workers = current_app.config.get('MAX_WORKERS')
+        app.logger.debug('* Creating executor')
+        max_workers = app.config.get('MAX_WORKERS')
         executor = futures.ThreadPoolExecutor(max_workers=max_workers)
     return executor

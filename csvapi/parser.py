@@ -1,13 +1,9 @@
 import os
-import logging
-
 
 import agate
 import agatesql  # noqa
 
 from csvapi.utils import get_db_info
-
-log = logging.getLogger('__name__')
 
 SNIFF_LIMIT = 2048
 

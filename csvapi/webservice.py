@@ -11,6 +11,7 @@ app.add_url_rule('/apify', view_func=ParseView.as_view('parse'))
 
 @app.errorhandler(APIError)
 def handle_api_error(error):
+    app.logger.error(error.message)
     response = jsonify(error.to_dict())
     response.status_code = error.status
     return response

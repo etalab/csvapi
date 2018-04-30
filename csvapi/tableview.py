@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import sqlite3
 import threading
 import time
@@ -8,13 +7,12 @@ from contextlib import contextmanager
 from pathlib import Path
 
 
-from quart import request, jsonify, current_app
+from quart import request, jsonify, current_app as app
 from quart.views import MethodView
 
 from csvapi.errors import APIError
 from csvapi.utils import get_db_info, get_executor
 
-log = logging.getLogger(__name__)
 connections = threading.local()
 
 ROWS_LIMIT = 100
@@ -71,7 +69,7 @@ class TableView(MethodView):
                     cursor.execute(sql, params or {})
                     rows = cursor.fetchall()
                 except Exception:
-                    log.error('ERROR: conn={}, sql = {}, params = {}'.format(
+                    app.logger.error('ERROR: conn={}, sql = {}, params = {}'.format(
                         conn, repr(sql), params
                     ))
                     raise
@@ -109,10 +107,7 @@ class TableView(MethodView):
         }
 
     async def get(self, urlhash):
-        db_info = get_db_info(
-            current_app.config.get('DB_ROOT_DIR'),
-            urlhash
-        )
+        db_info = get_db_info(app.config.get('DB_ROOT_DIR'), urlhash)
         p = Path(db_info['db_path'])
         if not p.exists():
             raise APIError('Database has probably been removed.', status=404)

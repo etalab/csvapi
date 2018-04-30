@@ -37,5 +37,6 @@ def serve(dbs, host, port, debug, reload, cache, max_workers):
         'MAX_WORKERS': max_workers,
         # TODO this probably does not exist in Quart
         'RESPONSE_TIMEOUT': RESPONSE_TIMEOUT,
+        'DEBUG': debug,
     })
     app.run(host=host, port=port, debug=debug, use_reloader=reload)
