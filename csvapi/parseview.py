@@ -1,5 +1,4 @@
 import asyncio
-import hashlib
 import os
 import tempfile
 
@@ -13,7 +12,7 @@ from quart.views import MethodView
 
 from csvapi.errors import APIError
 from csvapi.parser import parse
-from csvapi.utils import get_db_info, get_executor
+from csvapi.utils import get_db_info, get_executor, get_hash
 
 
 class ParseView(MethodView):
@@ -35,7 +34,7 @@ class ParseView(MethodView):
             raise APIError('Missing url query string variable.', status=400)
         if not validators.url(url):
             raise APIError('Malformed url parameter.', status=400)
-        _hash = hashlib.md5(url.encode('utf-8')).hexdigest()
+        _hash = get_hash(url)
 
         def do_parse_in_thread(storage, logger):
             logger.debug('* do_parse_in_thread %s (%s)', _hash, url)

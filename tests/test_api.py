@@ -4,10 +4,11 @@ from pathlib import Path
 import pytest
 import requests_mock
 
+from csvapi.utils import get_hash
 from csvapi.webservice import app as csvapi_app
 
 MOCK_CSV_URL = 'http://domain.com/file.csv'
-MOCK_CSV_HASH = '7c3faa966a8ef777d0e3083f373be907'
+MOCK_CSV_HASH = get_hash(MOCK_CSV_URL)
 DB_ROOT_DIR = './tests/dbs'
 
 
@@ -218,10 +219,12 @@ async def test_api_sort_desc(client, rmock, csv):
 async def test_api_excel(client, rmock, extension):
     here = os.path.dirname(os.path.abspath(__file__))
     content = open('{}/samples/test.{}'.format(here, extension), 'rb')
-    rmock.get(MOCK_CSV_URL, content=content.read())
+    mock_url = MOCK_CSV_URL.replace('.csv', extension)
+    mock_hash = get_hash(mock_url)
+    rmock.get(mock_url, content=content.read())
     content.close()
-    await client.get('/apify?url={}'.format(MOCK_CSV_URL))
-    res = await client.get('/api/{}'.format(MOCK_CSV_HASH))
+    await client.get('/apify?url={}'.format(mock_url))
+    res = await client.get('/api/{}'.format(mock_hash))
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['columns'] == ['rowid', 'col a', 'col b', 'col c']

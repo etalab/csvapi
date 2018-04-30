@@ -1,3 +1,5 @@
+import hashlib
+
 from concurrent import futures
 
 from quart import current_app as app
@@ -22,3 +24,7 @@ def get_executor():
         max_workers = app.config.get('MAX_WORKERS')
         executor = futures.ThreadPoolExecutor(max_workers=max_workers)
     return executor
+
+
+def get_hash(to_hash):
+    return hashlib.md5(to_hash.encode('utf-8')).hexdigest()
