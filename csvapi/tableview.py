@@ -1,17 +1,20 @@
+import asyncio
+import logging
 import sqlite3
+import threading
 import time
 
 from contextlib import contextmanager
 from pathlib import Path
 
-import asyncio
-import threading
 
 from quart import request, jsonify, current_app
 from quart.views import MethodView
 
-from csvapi.utils import get_db_info, api_error, get_executor
+from csvapi.errors import APIError
+from csvapi.utils import get_db_info, get_executor
 
+log = logging.getLogger(__name__)
 connections = threading.local()
 
 ROWS_LIMIT = 100
@@ -20,7 +23,7 @@ DEFAULT_SHAPE = 'lists'
 
 
 def prepare_connection(conn):
-    conn.row_factory = sqlite3.Row
+    # conn.row_factory = sqlite3.Row
     conn.text_factory = lambda x: str(x, 'utf-8', 'replace')
 
 
@@ -68,7 +71,7 @@ class TableView(MethodView):
                     cursor.execute(sql, params or {})
                     rows = cursor.fetchall()
                 except Exception:
-                    print('ERROR: conn={}, sql = {}, params = {}'.format(
+                    log.error('ERROR: conn={}, sql = {}, params = {}'.format(
                         conn, repr(sql), params
                     ))
                     raise
@@ -112,13 +115,13 @@ class TableView(MethodView):
         )
         p = Path(db_info['db_path'])
         if not p.exists():
-            return api_error('Database has probably been removed.', 404)
+            raise APIError('Database has probably been removed.', status=404)
 
         start = time.time()
         try:
             data = await self.data(db_info)
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as e:
-            return api_error(str(e), 400)
+            raise APIError('Error selecting data', status=400, payload=dict(details=str(e)))
         end = time.time()
 
         _shape = request.args.get('_shape', DEFAULT_SHAPE)
@@ -130,7 +133,7 @@ class TableView(MethodView):
         elif _shape == 'lists':
             rows = data['rows']
         else:
-            return api_error('Unknown _shape: {}'.format(_shape), 400)
+            raise APIError('Unknown _shape: {}'.format(_shape), status=400)
 
         return jsonify({
             'ok': True,

@@ -1,6 +1,11 @@
+import logging
+
 from concurrent import futures
 
-from quart import jsonify, g, current_app
+from quart import current_app
+
+log = logging.getLogger(__name__)
+executor = None
 
 
 def get_db_info(db_root_dir, _hash):
@@ -13,16 +18,9 @@ def get_db_info(db_root_dir, _hash):
     }
 
 
-def api_error(msg, status=500, details=None):
-    return jsonify({
-        'ok': False,
-        'error': msg,
-        'details': details,
-    }, status)
-
-
 def get_executor():
-    if not hasattr(g, 'executor'):
+    global executor
+    if not executor:
         max_workers = current_app.config.get('MAX_WORKERS')
-        g.executor = futures.ThreadPoolExecutor(max_workers=max_workers)
-    return g.executor
+        executor = futures.ThreadPoolExecutor(max_workers=max_workers)
+    return executor
