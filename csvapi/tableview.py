@@ -52,7 +52,7 @@ class TableView(MethodView):
 
     async def execute(self, sql, db_info, params=None):
         """Executes sql against db_name in a thread"""
-        def sql_operation_in_thread():
+        def sql_operation_in_thread(logger):
             conn = getattr(connections, db_info['db_name'], None)
             if not conn:
                 conn = sqlite3.connect(
@@ -69,14 +69,14 @@ class TableView(MethodView):
                     cursor.execute(sql, params or {})
                     rows = cursor.fetchall()
                 except Exception:
-                    app.logger.error('ERROR: conn={}, sql = {}, params = {}'.format(
+                    logger.error('ERROR: conn={}, sql = {}, params = {}'.format(
                         conn, repr(sql), params
                     ))
                     raise
             return rows, cursor.description
 
         return await asyncio.get_event_loop().run_in_executor(
-            get_executor(), sql_operation_in_thread
+            get_executor(), sql_operation_in_thread, app.logger
         )
 
     async def data(self, db_info, rowid=True):
