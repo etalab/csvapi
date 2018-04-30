@@ -1,5 +1,6 @@
 from quart import Quart, jsonify
 
+from csvapi.crossdomain import add_cors_headers
 from csvapi.errors import APIError
 from csvapi.tableview import TableView
 from csvapi.parseview import ParseView
@@ -7,6 +8,7 @@ from csvapi.parseview import ParseView
 app = Quart(__name__)
 app.add_url_rule('/api/<urlhash>', view_func=TableView.as_view('table'))
 app.add_url_rule('/apify', view_func=ParseView.as_view('parse'))
+app.after_request(add_cors_headers)
 
 
 @app.errorhandler(APIError)
