@@ -29,8 +29,10 @@ def cli():
               help='Do not parse CSV again if DB already exists')
 @click.option('-w', '--max-workers', default=3,
               help='Max number of ThreadPoolExecutor workers')
+@click.option('-m', '--parse-module', default=None,
+              help='CSV pre-parser module to use')
 @cli.command()
-def serve(dbs, host, port, debug, reload, cache, max_workers):
+def serve(dbs, host, port, debug, reload, cache, max_workers, parse_module):
     if reload:
         import hupper
         hupper.start_reloader('csvapi.cli.serve')
@@ -38,4 +40,5 @@ def serve(dbs, host, port, debug, reload, cache, max_workers):
     app.config.CSV_CACHE_ENABLED = cache
     app.config.MAX_WORKERS = max_workers
     app.config.RESPONSE_TIMEOUT = RESPONSE_TIMEOUT
+    app.config.PARSE_MODULE = parse_module
     app.run(host=host, port=port, debug=debug)

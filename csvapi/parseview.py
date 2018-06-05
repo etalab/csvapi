@@ -44,7 +44,8 @@ class ParseView(HTTPMethodView):
                     tmp.write(chunk)
             tmp.close()
             try:
-                parse(tmp.name, _hash, storage=request.app.config.DB_ROOT_DIR)
+                parse(tmp.name, _hash, storage=request.app.config.DB_ROOT_DIR,
+                      parse_module=request.app.config.PARSE_MODULE)
             except Exception as e:
                 return api_error('Error parsing CSV', details=str(e))
             finally:
