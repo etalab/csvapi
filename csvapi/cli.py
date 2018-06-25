@@ -29,8 +29,12 @@ def cli():
               help='Do not parse CSV again if DB already exists')
 @click.option('-w', '--max-workers', default=3,
               help='Max number of ThreadPoolExecutor workers')
+@click.option('--ssl-cert', default=None,
+              help='Path to SSL certificate')
+@click.option('--ssl-key', default=None,
+              help='Path to SSL key')
 @cli.command()
-def serve(dbs, host, port, debug, reload, cache, max_workers):
+def serve(dbs, host, port, debug, reload, cache, max_workers, ssl_cert, ssl_key):
     if reload:
         import hupper
         hupper.start_reloader('csvapi.cli.serve')
@@ -38,4 +42,14 @@ def serve(dbs, host, port, debug, reload, cache, max_workers):
     app.config.CSV_CACHE_ENABLED = cache
     app.config.MAX_WORKERS = max_workers
     app.config.RESPONSE_TIMEOUT = RESPONSE_TIMEOUT
-    app.run(host=host, port=port, debug=debug)
+    params = {
+        'host': host,
+        'port': port,
+        'debug': debug,
+    }
+    if ssl_key and ssl_cert:
+        params['ssl'] = {
+            'cert': ssl_cert,
+            'key': ssl_key,
+        }
+    app.run(**params)
