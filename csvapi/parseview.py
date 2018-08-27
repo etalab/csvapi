@@ -28,6 +28,7 @@ class ParseView(HTTPMethodView):
 
     async def get(self, request):
         url = request.args.get('url')
+        encoding = request.args.get('encoding')
         if not url:
             return api_error('Missing url query string variable.', 400)
         if not validators.url(url):
@@ -44,7 +45,7 @@ class ParseView(HTTPMethodView):
             tmp.close()
             try:
                 log.debug('Launching parse...')
-                parse(tmp.name, _hash, storage=request.app.config.DB_ROOT_DIR)
+                parse(tmp.name, _hash, storage=request.app.config.DB_ROOT_DIR, encoding=encoding)
             finally:
                 log.debug('Removing tmp file: %s', tmp.name)
                 os.unlink(tmp.name)

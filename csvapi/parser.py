@@ -34,12 +34,12 @@ def to_sql(table, _hash, storage):
     table.to_sql(db_info['dsn'], db_info['db_name'], overwrite=True)
 
 
-def parse(filepath, _hash, storage='.'):
+def parse(filepath, _hash, storage='.', encoding=None):
     log.debug('Parsing %s...', _hash)
     if is_binary(filepath):
         table = from_excel(filepath)
     else:
-        encoding = detect_encoding(filepath)
+        encoding = detect_encoding(filepath) if not encoding else encoding
         table = from_csv(filepath, encoding=encoding)
     log.debug('Launching to_sql for %s...', _hash)
     return to_sql(table, _hash, storage)
