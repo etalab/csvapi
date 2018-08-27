@@ -1,7 +1,6 @@
 import asyncio
 import hashlib
 import json
-import logging
 import os
 import tempfile
 
@@ -12,11 +11,10 @@ import validators
 
 from sanic import response
 from sanic.views import HTTPMethodView
+from sanic.log import logger as log
 
 from csvapi.parser import parse
-from csvapi.utils import get_db_info, api_error
-
-log = logging.getLogger('__name__')
+from csvapi.utils import get_db_info, api_error, api_error_from_e
 
 
 class ParseView(HTTPMethodView):
@@ -37,6 +35,7 @@ class ParseView(HTTPMethodView):
         _hash = hashlib.md5(url.encode('utf-8')).hexdigest()
 
         def do_parse_in_thread():
+            log.debug('Downloading file... %s' % url)
             tmp = tempfile.NamedTemporaryFile(delete=False)
             r = requests.get(url, stream=True)
             for chunk in r.iter_content(chunk_size=1024):
@@ -44,18 +43,21 @@ class ParseView(HTTPMethodView):
                     tmp.write(chunk)
             tmp.close()
             try:
+                log.debug('Launching parse...')
                 parse(tmp.name, _hash, storage=request.app.config.DB_ROOT_DIR)
-            except Exception as e:
-                return api_error('Error parsing CSV', details=str(e))
             finally:
+                log.debug('Removing tmp file: %s', tmp.name)
                 os.unlink(tmp.name)
 
         if not self.already_exists(request.app, _hash):
-            await asyncio.get_event_loop().run_in_executor(
-                request.app.executor, do_parse_in_thread
-            )
+            try:
+                await asyncio.get_event_loop().run_in_executor(
+                    request.app.executor, do_parse_in_thread
+                )
+            except Exception as e:
+                return api_error_from_e('Error parsing CSV', e)
         else:
-            log.debug('{}.db already exists, skipping parse.'.format(_hash))
+            log.info('{}.db already exists, skipping parse.'.format(_hash))
         return response.json({
             'ok': True,
             'endpoint': '{}://{}/api/{}'.format(

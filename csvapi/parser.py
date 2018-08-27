@@ -1,13 +1,11 @@
 import os
-import logging
-
 
 import agate
 import agatesql  # noqa
+from sanic.log import logger as log
 
 from csvapi.utils import get_db_info
 
-log = logging.getLogger('__name__')
 
 SNIFF_LIMIT = 2048
 
@@ -37,9 +35,11 @@ def to_sql(table, _hash, storage):
 
 
 def parse(filepath, _hash, storage='.'):
+    log.debug('Parsing %s...', _hash)
     if is_binary(filepath):
         table = from_excel(filepath)
     else:
         encoding = detect_encoding(filepath)
         table = from_csv(filepath, encoding=encoding)
+    log.debug('Launching to_sql for %s...', _hash)
     return to_sql(table, _hash, storage)
