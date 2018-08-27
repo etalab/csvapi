@@ -30,6 +30,17 @@ This converts a CSV to an SQLite database (w/ `agate`) and returns the following
 {"ok": true, "endpoint": "http://localhost:8001/api/cde857960e8dc24c9cbcced673b496bb"}
 ```
 
+### Parameters
+
+Some parameters can be used in the query string.
+
+#### `encoding`
+
+**default**: _automatic detection_
+
+You can force an encoding (e.g. `utf-8`) using this parameter, instead of relying on the automatic detection.
+
+
 ### Data API
 
 This is the `endpoint` attribute of the previous response.
