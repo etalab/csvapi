@@ -27,6 +27,7 @@ setup(
         'validators==0.12.1',
         'Sanic-Cors==0.9.3',
         'agate-excel==0.2.2',
+        'cchardet==2.1.1',
     ],
     entry_points='''
         [console_scripts]

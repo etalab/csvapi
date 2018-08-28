@@ -2,6 +2,7 @@ import os
 
 import agate
 import agatesql  # noqa
+import cchardet as chardet
 from sanic.log import logger as log
 
 from csvapi.utils import get_db_info
@@ -16,8 +17,8 @@ def is_binary(filepath):
 
 
 def detect_encoding(filepath):
-    with os.popen('file {} -b --mime-encoding'.format(filepath)) as proc:
-        return proc.read()
+    with open(filepath, 'rb') as f:
+        return chardet.detect(f.read()).get('encoding')
 
 
 def from_csv(filepath, encoding='utf-8'):
