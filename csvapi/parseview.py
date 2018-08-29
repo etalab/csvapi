@@ -2,8 +2,6 @@ import asyncio
 import os
 import tempfile
 
-from pathlib import Path
-
 import requests
 import validators
 
@@ -12,19 +10,13 @@ from quart.views import MethodView
 
 from csvapi.errors import APIError
 from csvapi.parser import parse
-from csvapi.utils import get_db_info, get_executor, get_hash
+from csvapi.utils import already_exists, get_executor, get_hash
 
 
 class ParseView(MethodView):
 
     async def options(self):
         pass
-
-    def already_exists(self, urlhash):
-        cache_enabled = app.config.get('CSV_CACHE_ENABLED')
-        if not cache_enabled:
-            return False
-        return Path(get_db_info(_hash)['db_path']).exists()
 
     async def get(self):
         app.logger.debug('* Starting ParseView.get')
@@ -52,7 +44,7 @@ class ParseView(MethodView):
             finally:
                 os.unlink(tmp.name)
 
-        if not self.already_exists(urlhash):
+        if not already_exists(urlhash):
             try:
                 storage = app.config['DB_ROOT_DIR']
                 await asyncio.get_event_loop().run_in_executor(
@@ -61,7 +53,7 @@ class ParseView(MethodView):
             except Exception as e:
                 raise APIError('Error parsing CSV', payload=dict(details=str(e)))
         else:
-            app.logger.info('{}.db already exists, skipping parse.'.format(_hash))
+            app.logger.info('{}.db already exists, skipping parse.'.format(urlhash))
         return jsonify({
             'ok': True,
             'endpoint': '{}://{}/api/{}'.format(

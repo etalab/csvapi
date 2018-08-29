@@ -29,8 +29,22 @@ def app():
 
 
 @pytest.fixture
+def app_w_cache(app):
+    app.config.update({
+        'CSV_CACHE_ENABLED': True,
+    })
+    yield app
+    [db.unlink() for db in Path(DB_ROOT_DIR).glob('*.db')]
+
+
+@pytest.fixture
 def client(app):
     yield app.test_client()
+
+
+@pytest.fixture
+def client_w_cache(app_w_cache):
+    yield app_w_cache.test_client()
 
 
 @pytest.fixture
@@ -73,6 +87,19 @@ async def test_apify_wrong_url(rmock, csv, client):
 async def test_apify(rmock, csv, client):
     rmock.get(MOCK_CSV_URL, content=csv.encode('utf-8'))
     res = await client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['ok']
+    assert 'endpoint' in jsonres
+    assert '/api/{}'.format(MOCK_CSV_HASH) in jsonres['endpoint']
+    db_path = Path(DB_ROOT_DIR) / '{}.db'.format(MOCK_CSV_HASH)
+    assert db_path.exists()
+
+
+@pytest.mark.asyncio
+async def test_apify_w_cache(rmock, csv, client_w_cache):
+    rmock.get(MOCK_CSV_URL, content=csv.encode('utf-8'))
+    res = await client_w_cache.get('/apify?url={}'.format(MOCK_CSV_URL))
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['ok']
