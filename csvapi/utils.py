@@ -7,12 +7,14 @@ from quart import current_app as app
 executor = None
 
 
-def get_db_info(db_root_dir, _hash):
-    dbpath = '{}/{}.db'.format(db_root_dir, _hash)
+def get_db_info(urlhash, storage=None):
+    # app.config not thread safe, sometimes we need to pass storage directly
+    storage = storage or app.config['DB_ROOT_DIR']
+    dbpath = '{}/{}.db'.format(storage, urlhash)
     return {
         'dsn': 'sqlite:///{}'.format(dbpath),
-        'db_name': _hash,
-        'table_name': _hash,
+        'db_name': urlhash,
+        'table_name': urlhash,
         'db_path': dbpath,
     }
 

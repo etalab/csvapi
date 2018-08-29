@@ -20,12 +20,11 @@ class ParseView(MethodView):
     async def options(self):
         pass
 
-    def already_exists(self, _hash):
+    def already_exists(self, urlhash):
         cache_enabled = app.config.get('CSV_CACHE_ENABLED')
         if not cache_enabled:
             return False
-        storage = app.config['DB_ROOT_DIR']
-        return Path(get_db_info(storage, _hash)['db_path']).exists()
+        return Path(get_db_info(_hash)['db_path']).exists()
 
     async def get(self):
         app.logger.debug('* Starting ParseView.get')
@@ -35,28 +34,29 @@ class ParseView(MethodView):
             raise APIError('Missing url query string variable.', status=400)
         if not validators.url(url):
             raise APIError('Malformed url parameter.', status=400)
-        _hash = get_hash(url)
+        urlhash = get_hash(url)
 
         def do_parse_in_thread(storage, logger):
-            logger.debug('* do_parse_in_thread %s (%s)', _hash, url)
+            logger.debug('* do_parse_in_thread %s (%s)', urlhash, url)
             tmp = tempfile.NamedTemporaryFile(delete=False)
             r = requests.get(url, stream=True)
             for chunk in r.iter_content(chunk_size=1024):
                 if chunk:
                     tmp.write(chunk)
             tmp.close()
-            logger.debug('* Downloaded %s', _hash)
+            logger.debug('* Downloaded %s', urlhash)
             try:
-                logger.debug('* Parsing %s...', _hash)
-                parse(tmp.name, _hash, storage=storage, encoding=encoding)
-                logger.debug('* Parsed %s', _hash)
+                logger.debug('* Parsing %s...', urlhash)
+                parse(tmp.name, urlhash, storage, encoding=encoding)
+                logger.debug('* Parsed %s', urlhash)
             finally:
                 os.unlink(tmp.name)
 
-        if not self.already_exists(_hash):
+        if not self.already_exists(urlhash):
             try:
+                storage = app.config['DB_ROOT_DIR']
                 await asyncio.get_event_loop().run_in_executor(
-                    get_executor(), do_parse_in_thread, app.config['DB_ROOT_DIR'], app.logger
+                    get_executor(), do_parse_in_thread, storage, app.logger
                 )
             except Exception as e:
                 raise APIError('Error parsing CSV', payload=dict(details=str(e)))
@@ -65,6 +65,6 @@ class ParseView(MethodView):
         return jsonify({
             'ok': True,
             'endpoint': '{}://{}/api/{}'.format(
-                request.scheme, request.host, _hash
+                request.scheme, request.host, urlhash
             ),
         })

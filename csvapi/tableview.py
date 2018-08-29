@@ -107,7 +107,7 @@ class TableView(MethodView):
         }
 
     async def get(self, urlhash):
-        db_info = get_db_info(app.config.get('DB_ROOT_DIR'), urlhash)
+        db_info = get_db_info(urlhash)
         p = Path(db_info['db_path'])
         if not p.exists():
             raise APIError('Database has probably been removed.', status=404)

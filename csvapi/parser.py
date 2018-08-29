@@ -28,15 +28,15 @@ def from_excel(filepath):
     return agate.Table.from_xls(filepath)
 
 
-def to_sql(table, _hash, storage):
-    db_info = get_db_info(storage, _hash)
+def to_sql(table, urlhash, storage):
+    db_info = get_db_info(urlhash, storage=storage)
     table.to_sql(db_info['dsn'], db_info['db_name'], overwrite=True)
 
 
-def parse(filepath, _hash, storage='.', encoding=None):
+def parse(filepath, urlhash, storage, encoding=None):
     if is_binary(filepath):
         table = from_excel(filepath)
     else:
         encoding = detect_encoding(filepath) if not encoding else encoding
         table = from_csv(filepath, encoding=encoding)
-    return to_sql(table, _hash, storage)
+    return to_sql(table, urlhash, storage)
