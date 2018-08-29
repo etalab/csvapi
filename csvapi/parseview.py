@@ -30,6 +30,7 @@ class ParseView(MethodView):
     async def get(self):
         app.logger.debug('* Starting ParseView.get')
         url = request.args.get('url')
+        encoding = request.args.get('encoding')
         if not url:
             raise APIError('Missing url query string variable.', status=400)
         if not validators.url(url):
@@ -47,19 +48,20 @@ class ParseView(MethodView):
             logger.debug('* Downloaded %s', _hash)
             try:
                 logger.debug('* Parsing %s...', _hash)
-                parse(tmp.name, _hash, storage=storage)
+                parse(tmp.name, _hash, storage=storage, encoding=encoding)
                 logger.debug('* Parsed %s', _hash)
-            except Exception as e:
-                raise APIError('Error parsing CSV', payload=dict(details=str(e)))
             finally:
                 os.unlink(tmp.name)
 
         if not self.already_exists(_hash):
-            await asyncio.get_event_loop().run_in_executor(
-                get_executor(), do_parse_in_thread, app.config['DB_ROOT_DIR'], app.logger
-            )
+            try:
+                await asyncio.get_event_loop().run_in_executor(
+                    get_executor(), do_parse_in_thread, app.config['DB_ROOT_DIR'], app.logger
+                )
+            except Exception as e:
+                raise APIError('Error parsing CSV', payload=dict(details=str(e)))
         else:
-            app.logger.debug('{}.db already exists, skipping parse.'.format(_hash))
+            app.logger.info('{}.db already exists, skipping parse.'.format(_hash))
         return jsonify({
             'ok': True,
             'endpoint': '{}://{}/api/{}'.format(

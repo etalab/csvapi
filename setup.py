@@ -20,13 +20,13 @@ setup(
     install_requires=[
         'click==6.7',
         'click_default_group==1.2',
-        'hupper==1.0',
         'requests==2.18.4',
         'agate==1.6.1',
         'agate-sql==0.5.3',
         'validators==0.12.1',
         'agate-excel==0.2.2',
-        'Quart==0.5.0',
+        'Quart==0.6.6',
+        'cchardet==2.1.1',
     ],
     entry_points='''
         [console_scripts]

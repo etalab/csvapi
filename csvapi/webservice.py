@@ -1,3 +1,5 @@
+import traceback
+
 from quart import Quart, jsonify
 
 from csvapi.crossdomain import add_cors_headers
@@ -14,6 +16,7 @@ app.after_request(add_cors_headers)
 @app.errorhandler(APIError)
 def handle_api_error(error):
     app.logger.error(error.message)
+    traceback.print_exc()
     response = jsonify(error.to_dict())
     response.status_code = error.status
     return response
