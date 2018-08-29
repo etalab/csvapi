@@ -23,3 +23,6 @@ rm apify\?url\=*
 # workers = 1, hypercorn w = 5 : 0m42.833s
 
 # workers = 5, hypercorn w = 5 : 0m16.097s
+
+# no shared executor, app.run : 0m35.871s
+# no shared executor, hypercorn w = 3 : 0m15.767s
