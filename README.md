@@ -18,6 +18,35 @@ pip install -e .
 csvapi serve -h 0.0.0.0 -p 8000
 ```
 
+## Command line options
+
+```
+csvapi serve --help
+Usage: csvapi serve [OPTIONS]
+
+Options:
+  --ssl-key TEXT             Path to SSL key
+  --ssl-cert TEXT            Path to SSL certificate
+  -w, --max-workers INTEGER  Max number of ThreadPoolExecutor workers
+  --cache / --no-cache       Do not parse CSV again if DB already exists
+  --reload                   Automatically reload if code change detected
+  --debug                    Enable debug mode - useful for development
+  -p, --port INTEGER         port for server, defaults to 8001
+  -h, --host TEXT            host for server, defaults to 127.0.0.1
+  --dbs DIRECTORY            Where to store sqlite DBs
+  --help                     Show this message and exit.
+```
+
+## Deploy
+
+With SSL, using [Hypercorn](https://pgjones.gitlab.io/hypercorn/):
+
+```
+hypercorn csvapi.webservice:app -b 0.0.0.0:443 --keyfile key.pem --ca-certs cert.pem
+```
+
+See [the documentation](https://pgjones.gitlab.io/hypercorn/usage.html) for more options.
+
 ## API usage
 
 ### Conversion

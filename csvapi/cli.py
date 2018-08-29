@@ -41,7 +41,6 @@ def serve(dbs, host, port, debug, reload, cache, max_workers, ssl_cert, ssl_key)
     if ssl_cert and ssl_key:
         ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         ssl_context.load_cert_chain(certfile=ssl_cert, keyfile=ssl_key)
-    # TODO load config from file (--config argument)
     app.config.update({
         'DB_ROOT_DIR': dbs,
         'CSV_CACHE_ENABLED': cache,
