@@ -12,7 +12,7 @@ app.add_url_rule('/api/<urlhash>', view_func=TableView.as_view('table'))
 app.add_url_rule('/apify', view_func=ParseView.as_view('parse'))
 app.after_request(add_cors_headers)
 
-app.config.from_pyfile('../csvapi.cfg')
+app.config.from_pyfile('../config.py')
 
 
 @app.errorhandler(APIError)
