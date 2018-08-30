@@ -6,7 +6,7 @@
 
 Requires Python 3.6+ and a Unix OS with the `file` command available.
 
-```
+```shell
 python3 -m venv pyenv && . pyenv/bin/activate
 git clone git@github.com:abulte/csvapi.git && cd csvapi
 pip install -e .
@@ -14,34 +14,34 @@ pip install -e .
 
 ## Quickstart
 
-```
+```shell
 csvapi serve -h 0.0.0.0 -p 8000
 ```
 
 ## Command line options
 
-```
-csvapi serve --help
+```shell
+$ csvapi serve --help
 Usage: csvapi serve [OPTIONS]
 
 Options:
-  --ssl-key TEXT             Path to SSL key
-  --ssl-cert TEXT            Path to SSL certificate
-  -w, --max-workers INTEGER  Max number of ThreadPoolExecutor workers
-  --cache / --no-cache       Do not parse CSV again if DB already exists
-  --reload                   Automatically reload if code change detected
-  --debug                    Enable debug mode - useful for development
-  -p, --port INTEGER         port for server, defaults to 8001
-  -h, --host TEXT            host for server, defaults to 127.0.0.1
-  --dbs DIRECTORY            Where to store sqlite DBs
-  --help                     Show this message and exit.
+    --ssl-key TEXT             Path to SSL key
+    --ssl-cert TEXT            Path to SSL certificate
+    -w, --max-workers INTEGER  Max number of ThreadPoolExecutor workers
+    --cache / --no-cache       Do not parse CSV again if DB already exists
+    --reload                   Automatically reload if code change detected
+    --debug                    Enable debug mode - useful for development
+    -p, --port INTEGER         port for server, defaults to 8001
+    -h, --host TEXT            host for server, defaults to 127.0.0.1
+    --dbs DIRECTORY            Where to store sqlite DBs
+    --help                     Show this message and exit.
 ```
 
 ## Deploy
 
 With SSL, using [Hypercorn](https://pgjones.gitlab.io/hypercorn/):
 
-```
+```shell
 hypercorn csvapi.webservice:app -b 0.0.0.0:443 --keyfile key.pem --ca-certs cert.pem
 ```
 
@@ -79,12 +79,12 @@ This is the `endpoint` attribute of the previous response.
 This queries a previously converted API file and returns the first 100 rows like this:
 
 ```json
-{
-    "ok": true,
-    "rows": [[], []],
-    "columns": [],
-    "query_ms": 1
-}
+    {
+        "ok": true,
+        "rows": [[], []],
+        "columns": [],
+        "query_ms": 1
+    }
 ```
 
 ### Parameters
