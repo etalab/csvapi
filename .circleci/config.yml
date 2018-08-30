@@ -1,55 +1,106 @@
-# Python CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-python/ for more details
-#
+---
 version: 2
+
 jobs:
-  build:
+  python:
     docker:
-      # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      - image: circleci/python:3.6.1
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
-
-    working_directory: ~/repo
-
+      - image: circleci/python:3.6.2-stretch-browsers
     steps:
       - checkout
-
-      # Download and cache dependencies
+      - run:
+          name: Compute Python dependencies key
+          command: cat requirements/*.pip > python.deps
+      - run:
+          name: Get the base reference branch
+          command: export BASE_BRANCH=$(base_branch)
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "setup.py" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
+          - py-cache-v2-{{ checksum "python.deps" }}
+          - py-cache-v2-{{ .Branch }}
+          - py-cache-v2-{{ .Environment.BASE_BRANCH }}
       - run:
-          name: install dependencies
+          name: Install python dependencies
           command: |
             python3 -m venv venv
-            . venv/bin/activate
-            pip install -e .[test]
-
+            source venv/bin/activate
+            pip install -r requirements/develop.pip || pip install -r requirements/develop.pip
       - save_cache:
+          key: py-cache-v2-{{ checksum "python.deps" }}
           paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "setup.py" }}
-
-      # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
+          - venv
+      - save_cache:
+          key: py-cache-v2-{{ .Branch }}
+          paths:
+          - venv
       - run:
-          name: run tests
+          name: Run tests
           command: |
-            . venv/bin/activate
-            pytest
-
+            source venv/bin/activate
+            inv qa test --report
+      - store_test_results:
+          path: reports/python
       - store_artifacts:
-          path: test-reports
-          destination: test-reports
+          path: reports/
+          destination: reports
+
+      - persist_to_workspace:
+          root: .
+          paths:
+          - venv
+
+  dist:
+    docker:
+      - image: circleci/python:3.6.2-stretch-browsers
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build a distributable package
+          command: |
+            source venv/bin/activate
+            if [[ $CIRCLE_TAG ]]; then inv dist; else inv dist -b $CIRCLE_BUILD_NUM; fi
+      - store_artifacts:
+          path: dist
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+
+  publish:
+    docker:
+      - image: circleci/python:3.6.2-stretch-browsers
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install Twine
+          command: sudo pip install twine
+      - deploy:
+          name: Publish on PyPI
+          command: twine upload --username "${PYPI_USERNAME}" --password "${PYPI_PASSWORD}" dist/*.whl
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - python:
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+      - dist:
+          requires:
+            - python
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+      - publish:
+          requires:
+            - dist
+          filters:
+            branches:
+              only:
+                - /v[0-9]+(\.[0-9]+)*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+          context: org-global
