@@ -8,7 +8,13 @@ Requires Python 3.6+ and a Unix OS with the `file` command available.
 
 ```shell
 python3 -m venv pyenv && . pyenv/bin/activate
-git clone git@github.com:abulte/csvapi.git && cd csvapi
+pip install csvapi
+```
+
+For development:
+
+```shell
+pip install -r requirements/develop.pip
 pip install -e .
 ```
 
