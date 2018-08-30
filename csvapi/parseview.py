@@ -42,7 +42,7 @@ class ParseView(MethodView):
                 parse(tmp.name, urlhash, storage, encoding=encoding)
                 logger.debug('* Parsed %s', urlhash)
             finally:
-                log.debug('Removing tmp file: %s', tmp.name)
+                logger.debug('Removing tmp file: %s', tmp.name)
                 os.unlink(tmp.name)
 
         if not already_exists(urlhash):
