@@ -1,41 +1,78 @@
+#!/usr/bin/env python
+import io
+import os
+import re
+
 from setuptools import setup, find_packages
 
-TESTS_REQUIRE = [
-    'requests-mock==1.4.0',
-    'pytest==3.5.0',
-    'aiohttp==3.1.3',
-    'pytest-asyncio==0.8.0',
-]
+RE_REQUIREMENT = re.compile(r'^\s*-r\s*(?P<filename>.*)$')
+RE_BADGE = re.compile(r'^\[\!\[(?P<text>[^\]]+)\]\[(?P<badge>[^\]]+)\]\]\[(?P<target>[^\]]+)\]$', re.M)
+
+BADGES_TO_KEEP = ['gitter-badge', 'readthedocs-badge']
+
+
+def md(filename):
+    '''
+    Load .md (markdown) file and sanitize it for PyPI.
+    Remove unsupported github tags:
+     - code-block directive
+     - travis ci build badges
+    '''
+    content = io.open(filename).read()
+
+    for match in RE_BADGE.finditer(content):
+        if match.group('badge') not in BADGES_TO_KEEP:
+            content = content.replace(match.group(0), '')
+    return content
+
+
+long_description = '\n'.join((
+    md('README.md'),
+    md('CHANGELOG.md'),
+    ''
+))
+
+
+def pip(filename):
+    """Parse pip reqs file and transform it to setuptools requirements."""
+    requirements = []
+    for line in open(os.path.join('requirements', filename)):
+        line = line.strip()
+        if not line or '://' in line or line.startswith('#'):
+            continue
+        match = RE_REQUIREMENT.match(line)
+        if match:
+            requirements.extend(pip(match.group('filename')))
+        else:
+            requirements.append(line)
+    return requirements
+
+
+install_requires = pip('install.pip')
+tests_require = pip('test.pip')
 
 setup(
     name='csvapi',
     description='An instant JSON API for your CSV',
-    author='Alexandre Bulté',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    author='Opendata Team',
+    author_email='opendatateam@data.gouv.fr',
     version='0.0.1.dev',
     license='MIT',
-    url='https://github.com/abulte/csvapi',
+    url='https://github.com/opendatateam/csvapi',
     packages=find_packages(),
     package_data={'csvapi': []},
     include_package_data=True,
-    install_requires=[
-        'click==6.7',
-        'click_default_group==1.2',
-        'requests==2.18.4',
-        'agate==1.6.1',
-        'agate-sql==0.5.3',
-        'validators==0.12.1',
-        'agate-excel==0.2.2',
-        'Quart==0.6.6',
-        'cchardet==2.1.1',
-    ],
+    install_requires=install_requires,
+    tests_require=tests_require,
+    extras_require={
+        'test': tests_require,
+    },
     entry_points='''
         [console_scripts]
         csvapi=csvapi.cli:cli
     ''',
-    tests_require=TESTS_REQUIRE,
-    extras_require={
-        'test':  TESTS_REQUIRE,
-    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
