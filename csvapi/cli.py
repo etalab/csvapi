@@ -1,4 +1,6 @@
 import click
+import ssl
+
 from click_default_group import DefaultGroup
 
 from csvapi.webservice import app
@@ -35,21 +37,16 @@ def cli():
               help='Path to SSL key')
 @cli.command()
 def serve(dbs, host, port, debug, reload, cache, max_workers, ssl_cert, ssl_key):
-    if reload:
-        import hupper
-        hupper.start_reloader('csvapi.cli.serve')
-    app.config.DB_ROOT_DIR = dbs
-    app.config.CSV_CACHE_ENABLED = cache
-    app.config.MAX_WORKERS = max_workers
-    app.config.RESPONSE_TIMEOUT = RESPONSE_TIMEOUT
-    params = {
-        'host': host,
-        'port': port,
-        'debug': debug,
-    }
-    if ssl_key and ssl_cert:
-        params['ssl'] = {
-            'cert': ssl_cert,
-            'key': ssl_key,
-        }
-    app.run(**params)
+    ssl_context = None
+    if ssl_cert and ssl_key:
+        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        ssl_context.load_cert_chain(certfile=ssl_cert, keyfile=ssl_key)
+    app.config.update({
+        'DB_ROOT_DIR': dbs,
+        'CSV_CACHE_ENABLED': cache,
+        'MAX_WORKERS': max_workers,
+        'DEBUG': debug,
+        # TODO this probably does not exist in Quart
+        'RESPONSE_TIMEOUT': RESPONSE_TIMEOUT,
+    })
+    app.run(host=host, port=port, debug=debug, use_reloader=reload, ssl=ssl_context)

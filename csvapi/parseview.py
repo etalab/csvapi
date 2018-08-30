@@ -1,67 +1,63 @@
 import asyncio
-import hashlib
-import json
 import os
 import tempfile
-
-from pathlib import Path
 
 import requests
 import validators
 
-from sanic import response
-from sanic.views import HTTPMethodView
-from sanic.log import logger as log
+from quart import request, jsonify, current_app as app
+from quart.views import MethodView
 
+from csvapi.errors import APIError
 from csvapi.parser import parse
-from csvapi.utils import get_db_info, api_error, api_error_from_e
+from csvapi.utils import already_exists, get_executor, get_hash
 
 
-class ParseView(HTTPMethodView):
+class ParseView(MethodView):
 
-    def already_exists(self, app, _hash):
-        cache_enabled = app.config.get('CSV_CACHE_ENABLED')
-        if not cache_enabled:
-            return False
-        storage = app.config.DB_ROOT_DIR
-        return Path(get_db_info(storage, _hash)['db_path']).exists()
+    async def options(self):
+        pass
 
-    async def get(self, request):
+    async def get(self):
+        app.logger.debug('* Starting ParseView.get')
         url = request.args.get('url')
         encoding = request.args.get('encoding')
         if not url:
-            return api_error('Missing url query string variable.', 400)
+            raise APIError('Missing url query string variable.', status=400)
         if not validators.url(url):
-            return api_error('Malformed url parameter.', 400)
-        _hash = hashlib.md5(url.encode('utf-8')).hexdigest()
+            raise APIError('Malformed url parameter.', status=400)
+        urlhash = get_hash(url)
 
-        def do_parse_in_thread():
-            log.debug('Downloading file... %s' % url)
+        def do_parse_in_thread(storage, logger):
+            logger.debug('* do_parse_in_thread %s (%s)', urlhash, url)
             tmp = tempfile.NamedTemporaryFile(delete=False)
             r = requests.get(url, stream=True)
             for chunk in r.iter_content(chunk_size=1024):
                 if chunk:
                     tmp.write(chunk)
             tmp.close()
+            logger.debug('* Downloaded %s', urlhash)
             try:
-                log.debug('Launching parse...')
-                parse(tmp.name, _hash, storage=request.app.config.DB_ROOT_DIR, encoding=encoding)
+                logger.debug('* Parsing %s...', urlhash)
+                parse(tmp.name, urlhash, storage, encoding=encoding)
+                logger.debug('* Parsed %s', urlhash)
             finally:
                 log.debug('Removing tmp file: %s', tmp.name)
                 os.unlink(tmp.name)
 
-        if not self.already_exists(request.app, _hash):
+        if not already_exists(urlhash):
             try:
+                storage = app.config['DB_ROOT_DIR']
                 await asyncio.get_event_loop().run_in_executor(
-                    request.app.executor, do_parse_in_thread
+                    get_executor(), do_parse_in_thread, storage, app.logger
                 )
             except Exception as e:
-                return api_error_from_e('Error parsing CSV', e)
+                raise APIError('Error parsing CSV', payload=dict(details=str(e)))
         else:
-            log.info('{}.db already exists, skipping parse.'.format(_hash))
-        return response.json({
+            app.logger.info('{}.db already exists, skipping parse.'.format(urlhash))
+        return jsonify({
             'ok': True,
             'endpoint': '{}://{}/api/{}'.format(
-                request.scheme, request.host, _hash
+                request.scheme, request.host, urlhash
             ),
-        }, dumps=json.dumps)
+        })

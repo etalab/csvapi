@@ -1,16 +1,17 @@
+import asyncio
 import sqlite3
+import threading
 import time
 
 from contextlib import contextmanager
 from pathlib import Path
 
-import asyncio
-import threading
 
-from sanic import response
-from sanic.views import HTTPMethodView
+from quart import request, jsonify, current_app as app
+from quart.views import MethodView
 
-from csvapi.utils import get_db_info, api_error
+from csvapi.errors import APIError
+from csvapi.utils import get_db_info, get_executor
 
 connections = threading.local()
 
@@ -20,7 +21,7 @@ DEFAULT_SHAPE = 'lists'
 
 
 def prepare_connection(conn):
-    conn.row_factory = sqlite3.Row
+    # conn.row_factory = sqlite3.Row
     conn.text_factory = lambda x: str(x, 'utf-8', 'replace')
 
 
@@ -44,11 +45,14 @@ def sqlite_timelimit(conn, ms):
     conn.set_progress_handler(None, n)
 
 
-class TableView(HTTPMethodView):
+class TableView(MethodView):
 
-    async def execute(self, executor, sql, db_info, params=None):
+    async def options(self):
+        pass
+
+    async def execute(self, sql, db_info, params=None):
         """Executes sql against db_name in a thread"""
-        def sql_operation_in_thread():
+        def sql_operation_in_thread(logger):
             conn = getattr(connections, db_info['db_name'], None)
             if not conn:
                 conn = sqlite3.connect(
@@ -65,17 +69,17 @@ class TableView(HTTPMethodView):
                     cursor.execute(sql, params or {})
                     rows = cursor.fetchall()
                 except Exception:
-                    print('ERROR: conn={}, sql = {}, params = {}'.format(
+                    logger.error('ERROR: conn={}, sql = {}, params = {}'.format(
                         conn, repr(sql), params
                     ))
                     raise
             return rows, cursor.description
 
         return await asyncio.get_event_loop().run_in_executor(
-            executor, sql_operation_in_thread
+            get_executor(), sql_operation_in_thread, app.logger
         )
 
-    async def data(self, request, db_info, rowid=True):
+    async def data(self, db_info, rowid=True):
         limit = request.args.get('_size', ROWS_LIMIT)
         rowid = not (request.args.get('_rowid') == 'hide')
         sort = request.args.get('_sort')
@@ -94,8 +98,7 @@ class TableView(HTTPMethodView):
         if offset:
             sql += ' OFFSET :o'
         rows, description = await self.execute(
-            request.app.executor, sql, db_info,
-            params={'l': limit, 'o': offset}
+            sql, db_info, params={'l': limit, 'o': offset}
         )
         columns = [r[0] for r in description]
         return {
@@ -103,20 +106,17 @@ class TableView(HTTPMethodView):
             'rows': list(rows),
         }
 
-    async def get(self, request, _hash):
-        db_info = get_db_info(
-            request.app.config.get('DB_ROOT_DIR'),
-            _hash
-        )
+    async def get(self, urlhash):
+        db_info = get_db_info(urlhash)
         p = Path(db_info['db_path'])
         if not p.exists():
-            return api_error('Database has probably been removed.', 404)
+            raise APIError('Database has probably been removed.', status=404)
 
         start = time.time()
         try:
-            data = await self.data(request, db_info)
+            data = await self.data(db_info)
         except (sqlite3.OperationalError, sqlite3.IntegrityError) as e:
-            return api_error(str(e), 400)
+            raise APIError('Error selecting data', status=400, payload=dict(details=str(e)))
         end = time.time()
 
         _shape = request.args.get('_shape', DEFAULT_SHAPE)
@@ -128,9 +128,9 @@ class TableView(HTTPMethodView):
         elif _shape == 'lists':
             rows = data['rows']
         else:
-            return api_error('Unknown _shape: {}'.format(_shape), 400)
+            raise APIError('Unknown _shape: {}'.format(_shape), status=400)
 
-        return response.json({
+        return jsonify({
             'ok': True,
             'query_ms': (end - start) * 1000,
             'rows': rows,
