@@ -1,3 +1,4 @@
+import os
 import traceback
 
 from quart import Quart, jsonify
@@ -12,7 +13,8 @@ app.add_url_rule('/api/<urlhash>', view_func=TableView.as_view('table'))
 app.add_url_rule('/apify', view_func=ParseView.as_view('parse'))
 app.after_request(add_cors_headers)
 
-app.config.from_pyfile('../config.py')
+conffile = os.environ.get('CSVAPI_CONFIG_FILE') or '../config.py'
+app.config.from_pyfile(conffile)
 
 
 @app.errorhandler(APIError)

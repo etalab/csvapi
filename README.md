@@ -53,6 +53,8 @@ hypercorn csvapi.webservice:app -b 0.0.0.0:443 --keyfile key.pem --ca-certs cert
 
 See [the documentation](https://pgjones.gitlab.io/hypercorn/usage.html) for more options.
 
+You can use the environment variable `CSVAPI_CONFIG_FILE` to point to a custom configuration file.
+
 ## API usage
 
 ### Conversion
