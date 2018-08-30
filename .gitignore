@@ -1,3 +1,5 @@
 dbs/*.db
 *.egg-info/
 *.pyc
+build/
+dist/

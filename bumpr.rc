@@ -1,0 +1,28 @@
+[bumpr]
+file = setup.py
+regex = \s{4}version='(?P<version>.+?)',
+vcs = git
+commit = true
+tag = true
+tag_format = v{version}
+push = true
+clean =
+    python setup.py clean
+    rm -rf *egg-info build dist
+tests = python -m pytest tests
+publish = python setup.py bdist_wheel
+files =
+    README.md
+
+[bump]
+unsuffix = true
+
+[prepare]
+part = patch
+suffix = dev
+
+[changelog]
+file = CHANGELOG.md
+bump = ## {version} ({date:%Y-%m-%d})
+prepare = ## Current (in progress)
+separator =

@@ -32,7 +32,7 @@ Options:
     --reload                   Automatically reload if code change detected
     --debug                    Enable debug mode - useful for development
     -p, --port INTEGER         port for server, defaults to 8001
-    -h, --host TEXT            host for server, defaults to 127.0.0.2.dev
+    -h, --host TEXT            host for server, defaults to 127.0.0.1
     --dbs DIRECTORY            Where to store sqlite DBs
     --help                     Show this message and exit.
 ```
