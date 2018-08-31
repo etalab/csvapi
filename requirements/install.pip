@@ -7,3 +7,4 @@ validators==0.12.1
 agate-excel==0.2.2
 Quart==0.6.6
 cchardet==2.1.1
+raven==6.9.0

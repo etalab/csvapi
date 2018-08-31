@@ -52,7 +52,7 @@ class ParseView(MethodView):
                     get_executor(), do_parse_in_thread, storage, app.logger
                 )
             except Exception as e:
-                raise APIError('Error parsing CSV', payload=dict(details=str(e)))
+                raise APIError('Error parsing CSV: %s' % e)
         else:
             app.logger.info('{}.db already exists, skipping parse.'.format(urlhash))
         return jsonify({

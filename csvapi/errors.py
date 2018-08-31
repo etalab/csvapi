@@ -2,7 +2,7 @@ class APIError(Exception):
     status = 500
 
     def __init__(self, message, status=None, payload=None):
-        Exception.__init__(self)
+        super().__init__(message)
         self.message = message
         if status is not None:
             self.status = status
