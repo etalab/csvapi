@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 0.0.3 (2018-08-31)
 
 - Sentry support via SENTRY_DSN config variable
 
