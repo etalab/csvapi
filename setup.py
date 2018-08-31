@@ -53,6 +53,7 @@ tests_require = pip('test.pip')
 
 setup(
     name='csvapi',
+    python_requires='>=3.6.1',
     description='An instant JSON API for your CSV',
     long_description=long_description,
     long_description_content_type='text/markdown',
