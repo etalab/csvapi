@@ -55,9 +55,10 @@ class ParseView(MethodView):
                 raise APIError('Error parsing CSV: %s' % e)
         else:
             app.logger.info('{}.db already exists, skipping parse.'.format(urlhash))
+        scheme = 'https' if app.config.get('FORCE_SSL') else request.scheme
         return jsonify({
             'ok': True,
             'endpoint': '{}://{}/api/{}'.format(
-                request.scheme, request.host, urlhash
+                scheme, request.host, urlhash
             ),
         })

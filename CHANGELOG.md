@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- FORCE_SSL config variable
 
 ## 0.0.3 (2018-08-31)
 
