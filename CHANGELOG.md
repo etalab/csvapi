@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 0.0.4 (2018-09-04)
 
 - FORCE_SSL config variable
 
