@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 0.0.5 (2018-09-10)
 
 - Make CSV sniff limit a config variable and raise the default value [#11](https://github.com/opendatateam/csvapi/pull/11)
 - Properly handle not found (404) errors
