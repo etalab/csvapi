@@ -2,6 +2,7 @@ import os
 import traceback
 
 from quart import Quart, jsonify
+from quart.exceptions import NotFound
 
 from csvapi.crossdomain import add_cors_headers
 from csvapi.errors import APIError
@@ -27,6 +28,16 @@ def handle_and_print_error():
         sentry_id = app.extensions['sentry'].captureException()
     traceback.print_exc()
     return sentry_id
+
+
+@app.errorhandler(NotFound)
+def handle_not_found(error):
+    response = jsonify({
+        'ok': False,
+        'error': 'Not found',
+    })
+    response.status_code = 404
+    return response
 
 
 @app.errorhandler(APIError)
