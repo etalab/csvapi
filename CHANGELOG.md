@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Compute the total number of rows in a table [#12](https://github.com/opendatateam/csvapi/pull/12)
 
 ## 0.0.5 (2018-09-10)
 
