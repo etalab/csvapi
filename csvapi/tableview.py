@@ -79,9 +79,10 @@ class TableView(MethodView):
             get_executor(), sql_operation_in_thread, app.logger
         )
 
-    async def data(self, db_info, rowid=True):
+    async def data(self, db_info):
         limit = request.args.get('_size', ROWS_LIMIT)
         rowid = not (request.args.get('_rowid') == 'hide')
+        total = not (request.args.get('_total') == 'hide')
         sort = request.args.get('_sort')
         sort_desc = request.args.get('_sort_desc')
         offset = request.args.get('_offset')
@@ -101,10 +102,19 @@ class TableView(MethodView):
             sql, db_info, params={'l': limit, 'o': offset}
         )
         columns = [r[0] for r in description]
-        return {
+        res = {
             'columns': columns,
             'rows': list(rows),
         }
+
+        if total:
+            r, d = await self.execute(
+                'SELECT COUNT(*) FROM [{}]'.format(db_info['table_name']),
+                db_info
+            )
+            res['total'] = r[0][0]
+
+        return res
 
     async def get(self, urlhash):
         db_info = get_db_info(urlhash)
@@ -130,9 +140,13 @@ class TableView(MethodView):
         else:
             raise APIError('Unknown _shape: {}'.format(_shape), status=400)
 
-        return jsonify({
+        res = {
             'ok': True,
             'query_ms': (end - start) * 1000,
             'rows': rows,
             'columns': data['columns'],
-        })
+        }
+        if data.get('total'):
+            res['total'] = data['total']
+
+        return jsonify(res)

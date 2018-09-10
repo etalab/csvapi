@@ -129,6 +129,7 @@ async def test_api(client, rmock, csv, separator, encoding):
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['columns'] == ['rowid', 'col a', 'col b', 'col c']
+    assert jsonres['total'] == 2
     assert jsonres['rows'] == [
         [1, 'data à1', 'data b1', 'z'],
         [2, 'data ª2', 'data b2', 'a'],
@@ -201,6 +202,14 @@ async def test_api_objects_norowid(client, rmock, uploaded_csv):
             'col b': 'data b2',
             'col c': 'a',
     }]
+
+
+@pytest.mark.asyncio
+async def test_api_objects_nototal(client, rmock, uploaded_csv):
+    res = await client.get('/api/{}?_total=hide'.format(MOCK_CSV_HASH))
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres.get('total') is None
 
 
 @pytest.mark.asyncio
