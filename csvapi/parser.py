@@ -6,7 +6,7 @@ import cchardet as chardet
 
 from csvapi.utils import get_db_info
 
-SNIFF_LIMIT = 2048
+SNIFF_LIMIT = 4096
 
 
 def is_binary(filepath):
@@ -19,8 +19,8 @@ def detect_encoding(filepath):
         return chardet.detect(f.read()).get('encoding')
 
 
-def from_csv(filepath, encoding='utf-8'):
-    return agate.Table.from_csv(filepath, sniff_limit=SNIFF_LIMIT, encoding=encoding)
+def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
+    return agate.Table.from_csv(filepath, sniff_limit=sniff_limit, encoding=encoding)
 
 
 def from_excel(filepath):
@@ -33,10 +33,10 @@ def to_sql(table, urlhash, storage):
     table.to_sql(db_info['dsn'], db_info['db_name'], overwrite=True)
 
 
-def parse(filepath, urlhash, storage, encoding=None):
+def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT):
     if is_binary(filepath):
         table = from_excel(filepath)
     else:
         encoding = detect_encoding(filepath) if not encoding else encoding
-        table = from_csv(filepath, encoding=encoding)
+        table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit)
     return to_sql(table, urlhash, storage)

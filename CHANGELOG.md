@@ -2,6 +2,7 @@
 
 ## Current (in progress)
 
+- Make CSV sniff limit a config variable and raise the default value
 - Properly handle not found (404) errors
 
 ## 0.0.4 (2018-09-04)

@@ -28,7 +28,7 @@ class ParseView(MethodView):
             raise APIError('Malformed url parameter.', status=400)
         urlhash = get_hash(url)
 
-        def do_parse_in_thread(storage, logger):
+        def do_parse_in_thread(storage, logger, sniff_limit):
             logger.debug('* do_parse_in_thread %s (%s)', urlhash, url)
             tmp = tempfile.NamedTemporaryFile(delete=False)
             r = requests.get(url, stream=True)
@@ -39,7 +39,7 @@ class ParseView(MethodView):
             logger.debug('* Downloaded %s', urlhash)
             try:
                 logger.debug('* Parsing %s...', urlhash)
-                parse(tmp.name, urlhash, storage, encoding=encoding)
+                parse(tmp.name, urlhash, storage, encoding=encoding, sniff_limit=sniff_limit)
                 logger.debug('* Parsed %s', urlhash)
             finally:
                 logger.debug('Removing tmp file: %s', tmp.name)
@@ -49,7 +49,7 @@ class ParseView(MethodView):
             try:
                 storage = app.config['DB_ROOT_DIR']
                 await asyncio.get_event_loop().run_in_executor(
-                    get_executor(), do_parse_in_thread, storage, app.logger
+                    get_executor(), do_parse_in_thread, storage, app.logger, app.config.get('CSV_SNIFF_LIMIT')
                 )
             except Exception as e:
                 raise APIError('Error parsing CSV: %s' % e)
