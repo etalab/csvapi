@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Make CSV sniff limit a config variable and raise the default value
+- Make CSV sniff limit a config variable and raise the default value [#11](https://github.com/opendatateam/csvapi/pull/11)
 - Properly handle not found (404) errors
 
 ## 0.0.4 (2018-09-04)
