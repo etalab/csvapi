@@ -203,6 +203,36 @@ The `_rowid` argument is used to display or hide rowids in the returned data. Us
 }
 ```
 
+#### `_total`
+
+**default**: `show`
+
+The `_total` argument is used to display or hide the total number of rows (independent of pagination) in the returned data. Use `_total=hide` to hide.
+
+```json
+{
+    "ok": true,
+    "query_ms": 2.681016922,
+    "rows": [
+    {
+        "Mission": "Justice",
+        "Programme": "0101",
+        "Consommation de CP": 57663310
+    },
+    {
+        "Mission": "Justice",
+        "Programme": "0101",
+        "Consommation de CP": 2255129
+    },
+    {
+        "Mission": "Justice",
+        "Programme": "0101",
+        "Consommation de CP": 36290
+    }],
+    "columns": ["Mission", "Programme", "Consommation de CP"],
+    "total": 3
+}
+```
 
 ## Credits
 
