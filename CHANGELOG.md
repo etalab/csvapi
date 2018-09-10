@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 0.0.6 (2018-09-10)
 
 - Compute the total number of rows in a table [#12](https://github.com/opendatateam/csvapi/pull/12)
 
