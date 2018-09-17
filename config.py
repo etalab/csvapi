@@ -9,3 +9,7 @@ CSV_SNIFF_LIMIT = 4096
 # In bytes, csvapi will stop downloading files if they reach this size
 # Default to 100 Mo
 MAX_FILE_SIZE = 1024 * 1024 * 100
+# Set this to an array of hosts to filter out calls by referer (403 returned if no match)
+# It will also match subdomains
+# e.g. REFERRERS_FILTER = ['data.gouv.fr'] will match 'demo.data.gouv.fr'
+REFERRERS_FILTER = None
