@@ -1,5 +1,9 @@
 # Changelog
 
+## Current (in progress)
+
+- Nothing yet
+
 ## 0.0.7 (2018-09-17)
 
 - `MAX_FILE_SIZE` config variable [#13](https://github.com/opendatateam/csvapi/pull/13)
