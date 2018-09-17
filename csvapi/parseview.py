@@ -34,15 +34,16 @@ class ParseView(MethodView):
             r = requests.get(url, stream=True)
             chunk_count = 0
             chunk_size = 1024
-            for chunk in r.iter_content(chunk_size=chunk_size):
-                if chunk_count * chunk_size > max_file_size:
-                    raise Exception('File too big (max size is %s bytes)' % max_file_size)
-                if chunk:
-                    tmp.write(chunk)
-                chunk_count += 1
-            tmp.close()
-            logger.debug('* Downloaded %s', urlhash)
             try:
+                for chunk in r.iter_content(chunk_size=chunk_size):
+                    if chunk_count * chunk_size > max_file_size:
+                        tmp.close()
+                        raise Exception('File too big (max size is %s bytes)' % max_file_size)
+                    if chunk:
+                        tmp.write(chunk)
+                    chunk_count += 1
+                tmp.close()
+                logger.debug('* Downloaded %s', urlhash)
                 logger.debug('* Parsing %s...', urlhash)
                 parse(tmp.name, urlhash, storage, encoding=encoding, sniff_limit=sniff_limit)
                 logger.debug('* Parsed %s', urlhash)
