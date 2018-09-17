@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- `MAX_FILE_SIZE` config variable
 
 ## 0.0.6 (2018-09-10)
 

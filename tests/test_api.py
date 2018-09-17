@@ -29,22 +29,8 @@ def app():
 
 
 @pytest.fixture
-def app_w_cache(app):
-    app.config.update({
-        'CSV_CACHE_ENABLED': True,
-    })
-    yield app
-    [db.unlink() for db in Path(DB_ROOT_DIR).glob('*.db')]
-
-
-@pytest.fixture
 def client(app):
     yield app.test_client()
-
-
-@pytest.fixture
-def client_w_cache(app_w_cache):
-    yield app_w_cache.test_client()
 
 
 @pytest.fixture
@@ -97,9 +83,10 @@ async def test_apify(rmock, csv, client):
 
 
 @pytest.mark.asyncio
-async def test_apify_w_cache(rmock, csv, client_w_cache):
+async def test_apify_w_cache(app, rmock, csv, client):
+    app.config.update({'CSV_CACHE_ENABLED': True})
     rmock.get(MOCK_CSV_URL, content=csv.encode('utf-8'))
-    res = await client_w_cache.get('/apify?url={}'.format(MOCK_CSV_URL))
+    res = await client.get('/apify?url={}'.format(MOCK_CSV_URL))
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['ok']
@@ -107,6 +94,7 @@ async def test_apify_w_cache(rmock, csv, client_w_cache):
     assert '/api/{}'.format(MOCK_CSV_HASH) in jsonres['endpoint']
     db_path = Path(DB_ROOT_DIR) / '{}.db'.format(MOCK_CSV_HASH)
     assert db_path.exists()
+    app.config.update({'CSV_CACHE_ENABLED': False})
 
 
 @pytest.mark.asyncio
@@ -232,6 +220,22 @@ async def test_api_sort_desc(client, rmock, uploaded_csv):
         [2, 'data ª2', 'data b2', 'a'],
         [1, 'data à1', 'data b1', 'z'],
     ]
+
+
+@pytest.mark.asyncio
+async def test_apify_file_too_big(app, client, rmock):
+    original_max_file_size = app.config.get('MAX_FILE_SIZE')
+    app.config.update({'MAX_FILE_SIZE': 1})
+    here = os.path.dirname(os.path.abspath(__file__))
+    content = open('{}/samples/test.{}'.format(here, 'xls'), 'rb')
+    mock_url = MOCK_CSV_URL.replace('.csv', 'xls')
+    rmock.get(mock_url, content=content.read())
+    content.close()
+    res = await client.get('/apify?url={}'.format(mock_url))
+    assert res.status_code == 500
+    jsonres = await res.json
+    assert 'File too big' in jsonres['error']
+    app.config.update({'MAX_FILE_SIZE': original_max_file_size})
 
 
 @pytest.mark.asyncio
