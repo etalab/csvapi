@@ -28,16 +28,22 @@ class ParseView(MethodView):
             raise APIError('Malformed url parameter.', status=400)
         urlhash = get_hash(url)
 
-        def do_parse_in_thread(storage, logger, sniff_limit):
+        def do_parse_in_thread(storage, logger, sniff_limit, max_file_size):
             logger.debug('* do_parse_in_thread %s (%s)', urlhash, url)
             tmp = tempfile.NamedTemporaryFile(delete=False)
             r = requests.get(url, stream=True)
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    tmp.write(chunk)
-            tmp.close()
-            logger.debug('* Downloaded %s', urlhash)
+            chunk_count = 0
+            chunk_size = 1024
             try:
+                for chunk in r.iter_content(chunk_size=chunk_size):
+                    if chunk_count * chunk_size > max_file_size:
+                        tmp.close()
+                        raise Exception('File too big (max size is %s bytes)' % max_file_size)
+                    if chunk:
+                        tmp.write(chunk)
+                    chunk_count += 1
+                tmp.close()
+                logger.debug('* Downloaded %s', urlhash)
                 logger.debug('* Parsing %s...', urlhash)
                 parse(tmp.name, urlhash, storage, encoding=encoding, sniff_limit=sniff_limit)
                 logger.debug('* Parsed %s', urlhash)
@@ -49,7 +55,8 @@ class ParseView(MethodView):
             try:
                 storage = app.config['DB_ROOT_DIR']
                 await asyncio.get_event_loop().run_in_executor(
-                    get_executor(), do_parse_in_thread, storage, app.logger, app.config.get('CSV_SNIFF_LIMIT')
+                    get_executor(), do_parse_in_thread, storage, app.logger,
+                    app.config.get('CSV_SNIFF_LIMIT'), app.config.get('MAX_FILE_SIZE'),
                 )
             except Exception as e:
                 raise APIError('Error parsing CSV: %s' % e)
