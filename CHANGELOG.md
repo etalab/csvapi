@@ -3,7 +3,7 @@
 ## Current (in progress)
 
 - `MAX_FILE_SIZE` config variable [#13](https://github.com/opendatateam/csvapi/pull/13)
-- Add filter by referrer feature (REFERRERS_FILTER)
+- Add filter by referrer feature (REFERRERS_FILTER) [#14](https://github.com/opendatateam/csvapi/pull/14)
 
 ## 0.0.6 (2018-09-10)
 
