@@ -256,3 +256,15 @@ async def test_api_excel(client, rmock, extension):
         [1, 'a1', 'b1', 'z'],
         [2, 'a2', 'b2', 'a'],
     ]
+
+
+@pytest.mark.asyncio
+async def test_api_filter_referrers(app, client):
+    app.config.update({'REFERRERS_FILTER': ['toto.com']})
+    res = await client.get('/api/{}'.format('404'))
+    assert res.status_code == 403
+    res = await client.get('/apify?url={}'.format('http://toto.com'))
+    assert res.status_code == 403
+    res = await client.get('/api/{}'.format('404'), headers={'Referer': 'http://next.toto.com'})
+    assert res.status_code == 404
+    app.config.update({'REFERRERS_FILTER': None})
