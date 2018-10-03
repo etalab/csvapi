@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Try to parse CSV w/o sniffing (excel dialect) before sniffing if it fails
+- Try to parse CSV w/o sniffing (excel dialect) after sniffing if it fails
 
 ## 0.0.7 (2018-09-17)
 
