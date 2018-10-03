@@ -22,9 +22,9 @@ def detect_encoding(filepath):
 def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
     """Try first w/o sniffing and then sniff if it fails"""
     try:
-        return agate.Table.from_csv(filepath, encoding=encoding)
-    except ValueError:
         return agate.Table.from_csv(filepath, sniff_limit=sniff_limit, encoding=encoding)
+    except ValueError:
+        return agate.Table.from_csv(filepath, encoding=encoding)
 
 
 def from_excel(filepath):
