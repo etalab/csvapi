@@ -1,5 +1,9 @@
 # Changelog
 
+## Current (in progress)
+
+- Nothing yet
+
 ## 0.0.8 (2018-10-04)
 
 - Try to parse CSV w/o sniffing (excel dialect) after sniffing if it fails
