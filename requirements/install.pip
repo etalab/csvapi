@@ -5,6 +5,6 @@ agate==1.6.1
 agate-sql==0.5.3
 validators==0.12.1
 agate-excel==0.2.2
-Quart==0.6.6
+Quart==0.6.11
 cchardet==2.1.1
 raven==6.9.0
