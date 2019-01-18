@@ -1,5 +1,9 @@
 # Changelog
 
+## Current (in progress)
+
+- Nothing yet
+
 ## 0.0.9 (2019-01-18)
 
 - Upgrade to Quart-0.6.6 and hypercorn-0.4.6 [#16](https://github.com/opendatateam/csvapi/pull/16)
