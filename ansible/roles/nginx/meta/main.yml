@@ -3,8 +3,6 @@ galaxy_info:
   description: NGinx base installation
   company: Etalab
 
-  issue_tracker_url: https://gitlab.incubateur.net/data.gouv.fr/infra.data.gouv.fr/issues
-
   license: MIT
 
   min_ansible_version: 2.4
