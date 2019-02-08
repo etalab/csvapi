@@ -234,6 +234,10 @@ The `_total` argument is used to display or hide the total number of rows (indep
 }
 ```
 
+## Production deployment
+
+Some example [Ansible 2](https://www.ansible.com) roles are [available here](/ansible).
+
 ## Credits
 
 Inspired by the excellent [Datasette](https://github.com/simonw/datasette).

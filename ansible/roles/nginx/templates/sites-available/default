@@ -1,0 +1,44 @@
+##
+# Default server configuration
+#
+# {{ ansible_managed }}
+##
+
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+    server_name _;
+
+    {% if nginx_ssl %}
+    # Only accept HTTPS Traffic
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+    {% if letsencrypt_webroot_path is defined %}
+    location /.well-known/acme-challenge {
+        root {{ letsencrypt_webroot_path }};
+    }
+    {% endif %}
+    {% else %}
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    location / {
+        # First attempt to serve request as file, then
+        # as directory, then fall back to displaying a 404.
+        try_files $uri $uri/ =404;
+    }
+    {% endif %}
+
+    location /status {
+        # Turn on nginx stats
+        stub_status on;
+        access_log off;
+        {% for host in nginx_status_allow %}
+        allow {{ host }};
+        {% endfor %}
+        deny all;
+   }
+}

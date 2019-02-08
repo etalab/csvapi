@@ -1,0 +1,97 @@
+---
+
+- name: Ensure file command is installed
+  apt: pkg=file state=present
+  tags:
+    - system
+    - install
+
+- name: Ensure csvapi user exists
+  user: name={{csvapi__user}} home={{csvapi__home}} createhome=yes shell=/bin/bash
+
+- name: Configure virtualenv
+  become: true
+  become_user: "{{ csvapi__user }}"
+  command: virtualenv -p python3.6 {{csvapi__home}} creates={{csvapi__home}}/bin/python
+
+- name: Install package
+  become: true
+  become_user: "{{ csvapi__user }}"
+  pip: name=csvapi version={{csvapi__version}} virtualenv={{csvapi__home}}
+  notify: restart hypercorn
+
+- name: Add csvapi configuration
+  template: src=config.py dest={{csvapi__config}}
+  notify: restart hypercorn
+  tags:
+    - config
+
+- name: Ensure .profile is present
+  file: path={{ csvapi__home }}/.profile state=touch owner={{ csvapi__user }} mode=0644
+  tags:
+    - config
+
+- name: Set environment variable CSVAPI_CONFIG_FILE
+  become: true
+  become_user: "{{ csvapi__user }}"
+  lineinfile:
+    dest: "{{csvapi__home}}/.profile"
+    line: "export CSVAPI_CONFIG_FILE={{ csvapi__config }}"
+    regexp: "^export CSVAPI_CONFIG_FILE="
+  notify: restart hypercorn
+  tags:
+    - config
+
+# should not be needed? But ~/bin was not on the PATH...
+- name: Set environment variable PATH
+  become: true
+  become_user: "{{ csvapi__user }}"
+  lineinfile:
+    dest: "{{csvapi__home}}/.profile"
+    line: "export PATH={{ csvapi__home }}/bin:$PATH"
+    regexp: "^export PATH="
+  notify: restart hypercorn
+  tags:
+    - config
+
+- name: Create nginx logs directory
+  file: path={{ csvapi__nginx_logs }} state=directory owner={{ csvapi__user }} group=www-data mode=0775
+  tags:
+    - nginx
+
+- name: Install nginx site
+  template: src=nginx.conf dest=/etc/nginx/sites-available/{{ csvapi__server_name }}
+  notify: restart nginx
+  tags:
+    - config
+    - nginx
+
+- name: Enable nginx site
+  file: src=/etc/nginx/sites-available/{{ csvapi__server_name }} dest=/etc/nginx/sites-enabled/{{csvapi__server_name}} state=link
+  notify: restart nginx
+  tags:
+    - config
+    - nginx
+
+- name: Create hypercorn logs directory
+  file: path={{ hypercorn__log_dir }} state=directory owner={{ hypercorn__user }} mode=0775
+  notify: restart hypercorn
+  tags:
+    - hypercorn
+
+- name: Create dbs directory
+  file: path={{ csvapi__home_dbs }} state=directory owner={{ hypercorn__user }} mode=0775
+  tags:
+    - hypercorn
+
+- name: Install systemd unit files
+  template: src=hypercorn.service dest=/etc/systemd/system/hypercorn.service
+  register: hypercorn__systemd_service
+  notify: restart hypercorn
+  tags:
+    - config
+
+- name: Ensure hypercorn service is started and enabled at boot
+  systemd: name=hypercorn state=started enabled=yes daemon_reload={{hypercorn__systemd_service.changed}}
+  tags:
+    - system
