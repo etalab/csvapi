@@ -1,0 +1,10 @@
+---
+python36_version: 3.6.3
+python36_packages:
+  - "libpython3.6-minimal_{{python36_version}}-1.deb9u1_amd64"
+  - "libpython3.6-stdlib_{{python36_version}}-1.deb9u1_amd64"
+  - "libpython3.6_{{python36_version}}-1.deb9u1_amd64"
+  - "python3.6-minimal_{{python36_version}}-1.deb9u1_amd64"
+  - "python3.6_{{python36_version}}-1.deb9u1_amd64"
+  - "libpython3.6-dev_{{python36_version}}-1.deb9u1_amd64"
+  - "python3.6-dev_{{python36_version}}-1.deb9u1_amd64"

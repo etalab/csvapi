@@ -1,0 +1,46 @@
+---
+- name: Ensure python essential dependencies are installed
+  apt: pkg={{item}} state=present
+  with_items:
+    - build-essential
+    - pkg-config
+    - libexpat1-dev
+    - libssl1.1
+    - mime-support
+    - ca-certificates
+    - libmpdec2
+    - libreadline7
+    - libsqlite3-0
+  tags:
+    - system
+
+- name: Create tmp packages download directory
+  file: path=/tmp/python36-packages state=directory
+
+# TODO install and download only if needed (not already installed)
+- name: Download python3.6 packages
+  get_url:
+    url: 'https://github.com/chriskuehl/python3.6-debian-stretch/releases/download/v{{python36_version}}-1-deb9u1/{{item}}.deb'
+    dest: '/tmp/python36-packages/{{item}}.deb'
+  with_items: '{{ python36_packages }}'
+  tags:
+    - python
+    - system
+
+- name: Install python3.6 packages
+  apt: deb="/tmp/python36-packages/{{item}}.deb" state=present
+  with_items: '{{ python36_packages }}'
+  tags:
+    - python
+    - system
+
+- name: Download get-pip
+  get_url:
+    url: https://bootstrap.pypa.io/get-pip.py
+    dest: /tmp/python36-packages/get-pip.py
+
+- name: Install pip
+  command: python3.6 /tmp/python36-packages/get-pip.py
+
+- name: Install virtualenv
+  command: pip3 install -U virtualenv

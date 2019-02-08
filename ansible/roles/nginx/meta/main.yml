@@ -1,0 +1,14 @@
+galaxy_info:
+  author: Etalab
+  description: NGinx base installation
+  company: Etalab
+
+  license: MIT
+
+  min_ansible_version: 2.4
+
+  # platforms is a list of platforms, and each platform has a name and a list of versions.
+  platforms:
+  - name: Debian
+    versions:
+    - 9

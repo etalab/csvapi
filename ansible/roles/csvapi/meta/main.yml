@@ -1,0 +1,3 @@
+dependencies:
+- { role: python36, tags: ['python'] }
+- { role: nginx, tags: ['nginx'] }
