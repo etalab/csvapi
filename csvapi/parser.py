@@ -42,6 +42,5 @@ def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT):
         table = from_excel(filepath)
     else:
         encoding = detect_encoding(filepath) if not encoding else encoding
-        print('---->', encoding, sniff_limit)
         table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit)
     return to_sql(table, urlhash, storage)
