@@ -268,3 +268,18 @@ async def test_api_filter_referrers(app, client):
     res = await client.get('/api/{}'.format('404'), headers={'Referer': 'http://next.toto.com'})
     assert res.status_code == 404
     app.config.update({'REFERRERS_FILTER': None})
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('csv_path', Path(__file__).parent.glob('samples/real_csv/*.csv'))
+async def test_real_csv_files(client, rmock, csv_path):
+    with open(csv_path, 'rb') as content:
+        rmock.get(MOCK_CSV_URL, content=content.read())
+    res = await client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    assert res.status_code == 200
+    res = await client.get('/api/{}'.format(MOCK_CSV_HASH))
+    # w/ no error and more than 1 column and row we should be OK
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert len(jsonres['columns']) > 1
+    assert len(jsonres['rows']) > 1
