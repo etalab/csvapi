@@ -1,5 +1,5 @@
 click==7.0
-click_default_group==1.2
+click_default_group==1.2.1
 requests==2.18.4
 agate==1.6.1
 agate-sql==0.5.3
