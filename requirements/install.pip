@@ -3,7 +3,7 @@ click_default_group==1.2
 requests==2.22.0
 agate==1.6.1
 agate-sql==0.5.3
-validators==0.12.1
+validators==0.13.0
 agate-excel==0.2.2
 Quart==0.9.1
 cchardet==2.1.1
