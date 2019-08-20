@@ -4,7 +4,7 @@ requests==2.22.0
 agate==1.6.1
 agate-sql==0.5.4
 validators==0.13.0
-agate-excel==0.2.2
+agate-excel==0.2.3
 Quart==0.6.11
 cchardet==2.1.1
 raven==6.9.0
