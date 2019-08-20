@@ -1,5 +1,5 @@
 -e .[test]
-flake8==3.5.0
+flake8==3.7.8
 invoke==1.1.1
 pytest-cov==2.5.1
 readme-renderer==21.0
