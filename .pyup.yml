@@ -1,0 +1,8 @@
+#schedule: "every month"
+requirements:
+  - requirements/develop.pip:
+      update: False
+  - requirements/install.pip:
+      update: True
+  - requirements/test.pip:
+      update: False
