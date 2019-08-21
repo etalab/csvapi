@@ -4,5 +4,5 @@ requirements:
   - requirements/install.pip:
       update: True
       pin: True
-- requirements/test.pip:
+  - requirements/test.pip:
       update: False
