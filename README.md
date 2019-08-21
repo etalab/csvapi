@@ -2,6 +2,8 @@
 
 "Instantly" publish an API for a CSV hosted anywhere on the internet. Also supports Excel files.
 
+This tool is used by [data.gouv.fr](https://www.data.gouv.fr) to show a preview of hosted CSV and XLS files.
+
 ## Installation
 
 Requires Python 3.7+ and a Unix OS with the `file` command available.
