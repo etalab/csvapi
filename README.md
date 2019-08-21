@@ -4,7 +4,7 @@
 
 ## Installation
 
-Requires Python 3.6+ and a Unix OS with the `file` command available.
+Requires Python 3.7+ and a Unix OS with the `file` command available.
 
 ```shell
 python3 -m venv pyenv && . pyenv/bin/activate
