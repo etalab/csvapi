@@ -3,7 +3,7 @@ click==7.0
 requests==2.22.0
 agate==1.6.1
 agate-sql==0.5.4
-validators==0.12.1
+validators==0.13.0
 agate-excel==0.2.3
 Quart==0.9.1
 raven==6.10.0
