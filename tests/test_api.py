@@ -50,6 +50,15 @@ data ª2<sep>data b2<sep>4<sep>
 
 
 @pytest.fixture
+def csv_hour_content():
+    return '''id<sep>hour
+a<sep>12:30
+b<sep>9:15
+c<sep>09:45
+'''
+
+
+@pytest.fixture
 @pytest.mark.asyncio
 async def uploaded_csv(rmock, csv, client):
     content = csv.replace('<sep>', ';').encode('utf-8')
@@ -104,6 +113,24 @@ async def test_apify_col_mismatch(rmock, csv_col_mismatch, client):
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['ok']
+
+
+@pytest.mark.asyncio
+async def test_apify_hour_format(rmock, csv_hour_content, client):
+    content = csv_hour_content.replace('<sep>', ';').encode('utf-8')
+    url = 'http://example.com/file.csv'
+    rmock.get(url, content=content)
+    await client.get('/apify?url={}'.format(url))
+    res = await client.get('/api/{}'.format(get_hash(url)))
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns'] == ['rowid', 'id', 'hour']
+    assert jsonres['total'] == 3
+    assert jsonres['rows'] == [
+        [1, 'a', '12:30'],
+        [2, 'b', '09:15'],
+        [3, 'c', '09:45'],
+    ]
 
 
 @pytest.mark.asyncio
