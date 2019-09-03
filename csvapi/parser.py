@@ -2,9 +2,11 @@ import os
 
 import agate
 import agatesql  # noqa
+
 import cchardet as chardet
 
 from csvapi.utils import get_db_info
+from csvapi.type_tester import agate_tester
 
 SNIFF_LIMIT = 4096
 
@@ -22,14 +24,14 @@ def detect_encoding(filepath):
 def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
     """Try first w/ sniffing and then w/o sniffing if it fails"""
     try:
-        return agate.Table.from_csv(filepath, sniff_limit=sniff_limit, encoding=encoding)
+        return agate.Table.from_csv(filepath, sniff_limit=sniff_limit, encoding=encoding, column_types=agate_tester())
     except ValueError:
-        return agate.Table.from_csv(filepath, encoding=encoding)
+        return agate.Table.from_csv(filepath, encoding=encoding, column_types=agate_tester())
 
 
 def from_excel(filepath):
     import agateexcel  # noqa
-    return agate.Table.from_xls(filepath)
+    return agate.Table.from_xls(filepath, column_types=agate_tester())
 
 
 def to_sql(table, urlhash, storage):
