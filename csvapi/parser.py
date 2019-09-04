@@ -2,7 +2,6 @@ import os
 
 import agate
 import agatesql  # noqa
-
 import cchardet as chardet
 
 from csvapi.utils import get_db_info

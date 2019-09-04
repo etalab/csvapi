@@ -50,7 +50,7 @@ data ª2<sep>data b2<sep>4<sep>
 
 
 @pytest.fixture
-def csv_hour_content():
+def csv_hour():
     return '''id<sep>hour
 a<sep>12:30
 b<sep>9:15
@@ -124,8 +124,8 @@ async def test_apify_col_mismatch(rmock, csv_col_mismatch, client):
 
 
 @pytest.mark.asyncio
-async def test_apify_hour_format(rmock, csv_hour_content, client):
-    content = csv_hour_content.replace('<sep>', ';').encode('utf-8')
+async def test_apify_hour_format(rmock, csv_hour, client):
+    content = csv_hour.replace('<sep>', ';').encode('utf-8')
     url = 'http://example.com/file.csv'
     rmock.get(url, content=content)
     await client.get('/apify?url={}'.format(url))

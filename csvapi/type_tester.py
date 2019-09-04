@@ -1,8 +1,6 @@
 import re
 
-from agatesql import table as agatesqltable
 from agate.data_types.base import DataType
-from agate.type_tester import TypeTester
 from agate.data_types.boolean import Boolean
 from agate.data_types.date import Date
 from agate.data_types.date_time import DateTime
@@ -10,6 +8,10 @@ from agate.data_types.number import Number
 from agate.data_types.text import Text
 from agate.data_types.time_delta import TimeDelta
 from agate.exceptions import CastError
+from agate.type_tester import TypeTester
+
+from agatesql import table as agatesqltable
+
 from sqlalchemy.types import VARCHAR
 
 from stdnum.fr.siren import is_valid as is_valid_siren
@@ -17,6 +19,8 @@ from stdnum.fr.siret import is_valid as is_valid_siret
 
 
 class Time(DataType):
+    # Detect an hour minute string.
+    # Examples: 12:20, 9:50, 23:30
     def __init__(self, **kwargs):
         super(Time, self).__init__(**kwargs)
 
@@ -30,6 +34,7 @@ class Time(DataType):
 
 
 class SirenSiret(DataType):
+    # Detect a SIREN or SIRET number
     def __init__(self):
         super(SirenSiret, self).__init__()
 
