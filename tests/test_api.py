@@ -1,4 +1,5 @@
 import os
+import uuid
 from pathlib import Path
 
 import pytest
@@ -66,6 +67,10 @@ b<sep>522816651<sep>52281665100056
 """
 
 
+def random_url():
+    return f"https://example.com/{uuid.uuid4()}.csv"
+
+
 @pytest.fixture
 @pytest.mark.asyncio
 async def uploaded_csv(rmock, csv, client):
@@ -126,7 +131,7 @@ async def test_apify_col_mismatch(rmock, csv_col_mismatch, client):
 @pytest.mark.asyncio
 async def test_apify_hour_format(rmock, csv_hour, client):
     content = csv_hour.replace('<sep>', ';').encode('utf-8')
-    url = 'http://example.com/file.csv'
+    url = random_url()
     rmock.get(url, content=content)
     await client.get('/apify?url={}'.format(url))
     res = await client.get('/api/{}'.format(get_hash(url)))
@@ -136,7 +141,7 @@ async def test_apify_hour_format(rmock, csv_hour, client):
     assert jsonres['total'] == 3
     assert jsonres['rows'] == [
         [1, 'a', '12:30'],
-        [2, 'b', '09:15'],
+        [2, 'b', '9:15'],
         [3, 'c', '09:45'],
     ]
 
@@ -144,7 +149,7 @@ async def test_apify_hour_format(rmock, csv_hour, client):
 @pytest.mark.asyncio
 async def test_apify_siren_siret_format(rmock, csv_siren_siret, client):
     content = csv_siren_siret.replace('<sep>', ';').encode('utf-8')
-    url = 'http://example.com/siren_siret.csv'
+    url = random_url()
     rmock.get(url, content=content)
     await client.get('/apify?url={}'.format(url))
     res = await client.get('/api/{}'.format(get_hash(url)))
