@@ -59,6 +59,14 @@ c<sep>09:45
 
 
 @pytest.fixture
+def csv_siren_siret():
+    return """id<sep>siren<sep>siret
+a<sep>130025265<sep>13002526500013
+b<sep>522816651<sep>52281665100056
+"""
+
+
+@pytest.fixture
 @pytest.mark.asyncio
 async def uploaded_csv(rmock, csv, client):
     content = csv.replace('<sep>', ';').encode('utf-8')
@@ -130,6 +138,23 @@ async def test_apify_hour_format(rmock, csv_hour_content, client):
         [1, 'a', '12:30'],
         [2, 'b', '09:15'],
         [3, 'c', '09:45'],
+    ]
+
+
+@pytest.mark.asyncio
+async def test_apify_siren_siret_format(rmock, csv_siren_siret, client):
+    content = csv_siren_siret.replace('<sep>', ';').encode('utf-8')
+    url = 'http://example.com/siren_siret.csv'
+    rmock.get(url, content=content)
+    await client.get('/apify?url={}'.format(url))
+    res = await client.get('/api/{}'.format(get_hash(url)))
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns'] == ['rowid', 'id', 'siren', 'siret']
+    assert jsonres['total'] == 2
+    assert jsonres['rows'] == [
+        [1, 'a', '130025265', '13002526500013'],
+        [2, 'b', '522816651', '52281665100056'],
     ]
 
 

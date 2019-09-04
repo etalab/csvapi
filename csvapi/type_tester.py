@@ -12,6 +12,9 @@ from agate.data_types.time_delta import TimeDelta
 from agate.exceptions import CastError
 from sqlalchemy.types import VARCHAR
 
+from stdnum.fr.siren import is_valid as is_valid_siren
+from stdnum.fr.siret import is_valid as is_valid_siret
+
 
 class Time(DataType):
     def __init__(self, **kwargs):
@@ -26,10 +29,30 @@ class Time(DataType):
         raise CastError('Can not parse value "%s" as time.' % d)
 
 
+class SirenSiret(DataType):
+    def __init__(self):
+        super(SirenSiret, self).__init__()
+
+    def cast(self, d):
+        if is_valid_siret(d) or is_valid_siren(d):
+            return Text().cast(d)
+        raise CastError('Can not parse value "%s" as a SIREN or SIRET.' % d)
+
+
 agatesqltable.SQL_TYPE_MAP[Time] = VARCHAR
+agatesqltable.SQL_TYPE_MAP[SirenSiret] = VARCHAR
 
 
 def agate_tester():
     return TypeTester(
-        types=[Boolean(), Number(), Time(), TimeDelta(), Date(), DateTime(), Text()]
+        types=[
+            Boolean(),
+            SirenSiret(),
+            Number(),
+            Time(),
+            TimeDelta(),
+            Date(),
+            DateTime(),
+            Text(),
+        ]
     )
