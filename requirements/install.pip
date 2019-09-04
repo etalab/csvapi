@@ -8,3 +8,4 @@ agate-excel==0.2.3
 Quart==0.9.1
 raven==6.10.0
 cchardet==2.1.4
+python-stdnum==1.11

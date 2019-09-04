@@ -1,4 +1,5 @@
 import os
+import uuid
 from pathlib import Path
 
 import pytest
@@ -47,6 +48,27 @@ def csv_col_mismatch():
 data à1<sep>data b1<sep>2
 data ª2<sep>data b2<sep>4<sep>
 '''
+
+
+@pytest.fixture
+def csv_hour():
+    return '''id<sep>hour
+a<sep>12:30
+b<sep>9:15
+c<sep>09:45
+'''
+
+
+@pytest.fixture
+def csv_siren_siret():
+    return """id<sep>siren<sep>siret
+a<sep>130025265<sep>13002526500013
+b<sep>522816651<sep>52281665100056
+"""
+
+
+def random_url():
+    return f"https://example.com/{uuid.uuid4()}.csv"
 
 
 @pytest.fixture
@@ -104,6 +126,41 @@ async def test_apify_col_mismatch(rmock, csv_col_mismatch, client):
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['ok']
+
+
+@pytest.mark.asyncio
+async def test_apify_hour_format(rmock, csv_hour, client):
+    content = csv_hour.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, content=content)
+    await client.get('/apify?url={}'.format(url))
+    res = await client.get('/api/{}'.format(get_hash(url)))
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns'] == ['rowid', 'id', 'hour']
+    assert jsonres['total'] == 3
+    assert jsonres['rows'] == [
+        [1, 'a', '12:30'],
+        [2, 'b', '9:15'],
+        [3, 'c', '09:45'],
+    ]
+
+
+@pytest.mark.asyncio
+async def test_apify_siren_siret_format(rmock, csv_siren_siret, client):
+    content = csv_siren_siret.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, content=content)
+    await client.get('/apify?url={}'.format(url))
+    res = await client.get('/api/{}'.format(get_hash(url)))
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns'] == ['rowid', 'id', 'siren', 'siret']
+    assert jsonres['total'] == 2
+    assert jsonres['rows'] == [
+        [1, 'a', '130025265', '13002526500013'],
+        [2, 'b', '522816651', '52281665100056'],
+    ]
 
 
 @pytest.mark.asyncio
