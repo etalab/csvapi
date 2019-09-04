@@ -3,6 +3,7 @@
 ## Current (in progress)
 
 - Upgrade to Quart-0.9.1 :warning: requires python-3.7 [#21](https://github.com/opendatateam/csvapi/pull/21)
+- Parse hours, SIREN and SIRET as text [#42](https://github.com/opendatateam/csvapi/pull/42)
 
 ## 0.0.9 (2019-01-18)
 
