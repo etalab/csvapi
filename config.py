@@ -13,3 +13,4 @@ MAX_FILE_SIZE = 1024 * 1024 * 100
 # It will also match subdomains
 # e.g. REFERRERS_FILTER = ['data.gouv.fr'] will match 'demo.data.gouv.fr'
 REFERRERS_FILTER = None
+JSONIFY_PRETTYPRINT_REGULAR = False
