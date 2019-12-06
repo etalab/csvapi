@@ -1,6 +1,5 @@
 import hashlib
 
-from concurrent import futures
 from pathlib import Path
 
 from quart import current_app as app
@@ -18,15 +17,6 @@ def get_db_info(urlhash, storage=None):
         'table_name': urlhash,
         'db_path': dbpath,
     }
-
-
-def get_executor():
-    global executor
-    if not executor:
-        app.logger.debug('* Creating executor')
-        max_workers = app.config.get('MAX_WORKERS')
-        executor = futures.ThreadPoolExecutor(max_workers=max_workers)
-    return executor
 
 
 def get_hash(to_hash):
