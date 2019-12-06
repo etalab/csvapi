@@ -11,9 +11,9 @@ executor = None
 def get_db_info(urlhash, storage=None):
     # app.config not thread safe, sometimes we need to pass storage directly
     storage = storage or app.config['DB_ROOT_DIR']
-    dbpath = '{}/{}.db'.format(storage, urlhash)
+    dbpath = f"{storage}/{urlhash}.db"
     return {
-        'dsn': 'sqlite:///{}'.format(dbpath),
+        'dsn': f"sqlite:///{dbpath}",
         'db_name': urlhash,
         'table_name': urlhash,
         'db_path': dbpath,

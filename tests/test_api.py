@@ -3,7 +3,7 @@ import uuid
 from pathlib import Path
 
 import pytest
-import requests_mock
+from aioresponses import aioresponses
 
 from csvapi.utils import get_hash
 from csvapi.webservice import app as csvapi_app
@@ -15,7 +15,7 @@ DB_ROOT_DIR = './tests/dbs'
 
 @pytest.fixture
 def rmock():
-    with requests_mock.mock() as m:
+    with aioresponses() as m:
         yield m
 
 
@@ -75,8 +75,8 @@ def random_url():
 @pytest.mark.asyncio
 async def uploaded_csv(rmock, csv, client):
     content = csv.replace('<sep>', ';').encode('utf-8')
-    rmock.get(MOCK_CSV_URL, content=content)
-    await client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    rmock.get(MOCK_CSV_URL, body=content)
+    await client.get(f"/apify?url={MOCK_CSV_URL}")
 
 
 @pytest.mark.asyncio
@@ -93,36 +93,36 @@ async def test_apify_wrong_url(rmock, csv, client):
 
 @pytest.mark.asyncio
 async def test_apify(rmock, csv, client):
-    rmock.get(MOCK_CSV_URL, content=csv.encode('utf-8'))
-    res = await client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    rmock.get(MOCK_CSV_URL, status=200, body=csv.encode('utf-8'))
+    res = await client.get(f"/apify?url={MOCK_CSV_URL}")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['ok']
     assert 'endpoint' in jsonres
-    assert '/api/{}'.format(MOCK_CSV_HASH) in jsonres['endpoint']
-    db_path = Path(DB_ROOT_DIR) / '{}.db'.format(MOCK_CSV_HASH)
+    assert f"/api/{MOCK_CSV_HASH}" in jsonres['endpoint']
+    db_path = Path(DB_ROOT_DIR) / f"{MOCK_CSV_HASH}.db"
     assert db_path.exists()
 
 
 @pytest.mark.asyncio
 async def test_apify_w_cache(app, rmock, csv, client):
     app.config.update({'CSV_CACHE_ENABLED': True})
-    rmock.get(MOCK_CSV_URL, content=csv.encode('utf-8'))
-    res = await client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    rmock.get(MOCK_CSV_URL, body=csv.encode('utf-8'))
+    res = await client.get(f"/apify?url={MOCK_CSV_URL}")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['ok']
     assert 'endpoint' in jsonres
-    assert '/api/{}'.format(MOCK_CSV_HASH) in jsonres['endpoint']
-    db_path = Path(DB_ROOT_DIR) / '{}.db'.format(MOCK_CSV_HASH)
+    assert f"/api/{MOCK_CSV_HASH}" in jsonres['endpoint']
+    db_path = Path(DB_ROOT_DIR) / f"{MOCK_CSV_HASH}.db"
     assert db_path.exists()
     app.config.update({'CSV_CACHE_ENABLED': False})
 
 
 @pytest.mark.asyncio
 async def test_apify_col_mismatch(rmock, csv_col_mismatch, client):
-    rmock.get(MOCK_CSV_URL, content=csv_col_mismatch.replace('<sep>', ';').encode('utf-8'))
-    res = await client.get('/apify?url={}'.format(MOCK_CSV_URL))
+    rmock.get(MOCK_CSV_URL, body=csv_col_mismatch.replace('<sep>', ';').encode('utf-8'))
+    res = await client.get(f"/apify?url={MOCK_CSV_URL}")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['ok']
@@ -132,9 +132,9 @@ async def test_apify_col_mismatch(rmock, csv_col_mismatch, client):
 async def test_apify_hour_format(rmock, csv_hour, client):
     content = csv_hour.replace('<sep>', ';').encode('utf-8')
     url = random_url()
-    rmock.get(url, content=content)
-    await client.get('/apify?url={}'.format(url))
-    res = await client.get('/api/{}'.format(get_hash(url)))
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}")
+    res = await client.get(f"/api/{get_hash(url)}")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['columns'] == ['rowid', 'id', 'hour']
@@ -150,9 +150,9 @@ async def test_apify_hour_format(rmock, csv_hour, client):
 async def test_apify_siren_siret_format(rmock, csv_siren_siret, client):
     content = csv_siren_siret.replace('<sep>', ';').encode('utf-8')
     url = random_url()
-    rmock.get(url, content=content)
-    await client.get('/apify?url={}'.format(url))
-    res = await client.get('/api/{}'.format(get_hash(url)))
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}")
+    res = await client.get(f"/api/{get_hash(url)}")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['columns'] == ['rowid', 'id', 'siren', 'siret']
@@ -168,9 +168,9 @@ async def test_apify_siren_siret_format(rmock, csv_siren_siret, client):
 @pytest.mark.parametrize('encoding', ['utf-8', 'iso-8859-15', 'iso-8859-1'])
 async def test_api(client, rmock, csv, separator, encoding):
     content = csv.replace('<sep>', separator).encode(encoding)
-    rmock.get(MOCK_CSV_URL, content=content)
-    await client.get('/apify?url={}'.format(MOCK_CSV_URL))
-    res = await client.get('/api/{}'.format(MOCK_CSV_HASH))
+    rmock.get(MOCK_CSV_URL, body=content)
+    await client.get(f"/apify?url={MOCK_CSV_URL}")
+    res = await client.get(f"/api/{MOCK_CSV_HASH}")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['columns'] == ['rowid', 'col a', 'col b', 'col c']
@@ -183,7 +183,7 @@ async def test_api(client, rmock, csv, separator, encoding):
 
 @pytest.mark.asyncio
 async def test_api_limit(client, rmock, uploaded_csv):
-    res = await client.get('/api/{}?_size=1'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}?_size=1")
     assert res.status_code == 200
     jsonres = await res.json
     assert len(jsonres['rows']) == 1
@@ -194,7 +194,7 @@ async def test_api_limit(client, rmock, uploaded_csv):
 
 @pytest.mark.asyncio
 async def test_api_limit_offset(client, rmock, uploaded_csv):
-    res = await client.get('/api/{}?_size=1&_offset=1'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}?_size=1&_offset=1")
     assert res.status_code == 200
     jsonres = await res.json
     assert len(jsonres['rows']) == 1
@@ -205,19 +205,19 @@ async def test_api_limit_offset(client, rmock, uploaded_csv):
 
 @pytest.mark.asyncio
 async def test_api_wrong_limit(client, rmock, uploaded_csv):
-    res = await client.get('/api/{}?_size=toto'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}?_size=toto")
     assert res.status_code == 400
 
 
 @pytest.mark.asyncio
 async def test_api_wrong_shape(client, rmock, uploaded_csv):
-    res = await client.get('/api/{}?_shape=toto'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}?_shape=toto")
     assert res.status_code == 400
 
 
 @pytest.mark.asyncio
 async def test_api_objects_shape(client, rmock, uploaded_csv):
-    res = await client.get('/api/{}?_shape=objects'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}?_shape=objects")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['rows'] == [{
@@ -235,7 +235,7 @@ async def test_api_objects_shape(client, rmock, uploaded_csv):
 
 @pytest.mark.asyncio
 async def test_api_objects_norowid(client, rmock, uploaded_csv):
-    res = await client.get('/api/{}?_shape=objects&_rowid=hide'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}?_shape=objects&_rowid=hide")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['rows'] == [{
@@ -251,7 +251,7 @@ async def test_api_objects_norowid(client, rmock, uploaded_csv):
 
 @pytest.mark.asyncio
 async def test_api_objects_nototal(client, rmock, uploaded_csv):
-    res = await client.get('/api/{}?_total=hide'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}?_total=hide")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres.get('total') is None
@@ -259,7 +259,7 @@ async def test_api_objects_nototal(client, rmock, uploaded_csv):
 
 @pytest.mark.asyncio
 async def test_api_sort(client, rmock, uploaded_csv):
-    res = await client.get('/api/{}?_sort=col c'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}?_sort=col c")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['rows'] == [
@@ -270,7 +270,7 @@ async def test_api_sort(client, rmock, uploaded_csv):
 
 @pytest.mark.asyncio
 async def test_api_sort_desc(client, rmock, uploaded_csv):
-    res = await client.get('/api/{}?_sort_desc=col b'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}?_sort_desc=col b")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['rows'] == [
@@ -284,11 +284,11 @@ async def test_apify_file_too_big(app, client, rmock):
     original_max_file_size = app.config.get('MAX_FILE_SIZE')
     app.config.update({'MAX_FILE_SIZE': 1})
     here = os.path.dirname(os.path.abspath(__file__))
-    content = open('{}/samples/test.{}'.format(here, 'xls'), 'rb')
+    content = open(f"{here}/samples/test.{'xls'}", 'rb')
     mock_url = MOCK_CSV_URL.replace('.csv', 'xls')
-    rmock.get(mock_url, content=content.read())
+    rmock.get(mock_url, body=content.read())
     content.close()
-    res = await client.get('/apify?url={}'.format(mock_url))
+    res = await client.get(f"/apify?url={mock_url}")
     assert res.status_code == 500
     jsonres = await res.json
     assert 'File too big' in jsonres['error']
@@ -299,13 +299,13 @@ async def test_apify_file_too_big(app, client, rmock):
 @pytest.mark.parametrize('extension', ['xls', 'xlsx'])
 async def test_api_excel(client, rmock, extension):
     here = os.path.dirname(os.path.abspath(__file__))
-    content = open('{}/samples/test.{}'.format(here, extension), 'rb')
+    content = open(f"{here}/samples/test.{extension}", 'rb')
     mock_url = MOCK_CSV_URL.replace('.csv', extension)
     mock_hash = get_hash(mock_url)
-    rmock.get(mock_url, content=content.read())
+    rmock.get(mock_url, body=content.read())
     content.close()
-    await client.get('/apify?url={}'.format(mock_url))
-    res = await client.get('/api/{}'.format(mock_hash))
+    await client.get(f"/apify?url={mock_url}")
+    res = await client.get(f"/api/{mock_hash}")
     assert res.status_code == 200
     jsonres = await res.json
     assert jsonres['columns'] == ['rowid', 'col a', 'col b', 'col c']
@@ -318,11 +318,11 @@ async def test_api_excel(client, rmock, extension):
 @pytest.mark.asyncio
 async def test_api_filter_referrers(app, client):
     app.config.update({'REFERRERS_FILTER': ['toto.com']})
-    res = await client.get('/api/{}'.format('404'))
+    res = await client.get(f"/api/{'404'}")
     assert res.status_code == 403
-    res = await client.get('/apify?url={}'.format('http://toto.com'))
+    res = await client.get(f"/apify?url={'http://toto.com'}")
     assert res.status_code == 403
-    res = await client.get('/api/{}'.format('404'), headers={'Referer': 'http://next.toto.com'})
+    res = await client.get(f"/api/{'404'}", headers={'Referer': 'http://next.toto.com'})
     assert res.status_code == 404
     app.config.update({'REFERRERS_FILTER': None})
 
@@ -331,10 +331,10 @@ async def test_api_filter_referrers(app, client):
 @pytest.mark.parametrize('csv_path', Path(__file__).parent.glob('samples/real_csv/*.csv'))
 async def test_real_csv_files(client, rmock, csv_path):
     with open(csv_path, 'rb') as content:
-        rmock.get(MOCK_CSV_URL, content=content.read())
-    res = await client.get('/apify?url={}'.format(MOCK_CSV_URL))
+        rmock.get(MOCK_CSV_URL, body=content.read())
+    res = await client.get(f"/apify?url={MOCK_CSV_URL}")
     assert res.status_code == 200
-    res = await client.get('/api/{}'.format(MOCK_CSV_HASH))
+    res = await client.get(f"/api/{MOCK_CSV_HASH}")
     # w/ no error and more than 1 column and row we should be OK
     assert res.status_code == 200
     jsonres = await res.json

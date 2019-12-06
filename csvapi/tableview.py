@@ -56,7 +56,7 @@ class TableView(MethodView):
             conn = getattr(connections, db_info['db_name'], None)
             if not conn:
                 conn = sqlite3.connect(
-                    'file:{}?immutable=1'.format(db_info['db_path']),
+                    f"file:{db_info['db_path']}?immutable=1",
                     uri=True,
                     check_same_thread=False,
                 )
@@ -69,9 +69,7 @@ class TableView(MethodView):
                     cursor.execute(sql, params or {})
                     rows = cursor.fetchall()
                 except Exception:
-                    logger.error('ERROR: conn={}, sql = {}, params = {}'.format(
-                        conn, repr(sql), params
-                    ))
+                    logger.error(f"ERROR: conn={conn}, sql = {repr(sql)}, params = {params}")
                     raise
             return rows, cursor.description
 
@@ -88,11 +86,11 @@ class TableView(MethodView):
         offset = request.args.get('_offset')
 
         cols = 'rowid, *' if rowid else '*'
-        sql = 'SELECT {} FROM [{}]'.format(cols, db_info['table_name'])
+        sql = f"SELECT {cols} FROM [{db_info['table_name']}]"
         if sort:
-            sql += ' ORDER BY [{}]'.format(sort)
+            sql += f" ORDER BY [{sort}]"
         elif sort_desc:
-            sql += ' ORDER BY [{}] DESC'.format(sort_desc)
+            sql += f" ORDER BY [{sort_desc}] DESC"
         else:
             sql += ' ORDER BY rowid'
         sql += ' LIMIT :l'
@@ -109,7 +107,7 @@ class TableView(MethodView):
 
         if total:
             r, d = await self.execute(
-                'SELECT COUNT(*) FROM [{}]'.format(db_info['table_name']),
+                f"SELECT COUNT(*) FROM [{db_info['table_name']}]",
                 db_info
             )
             res['total'] = r[0][0]
@@ -138,7 +136,7 @@ class TableView(MethodView):
         elif _shape == 'lists':
             rows = data['rows']
         else:
-            raise APIError('Unknown _shape: {}'.format(_shape), status=400)
+            raise APIError(f"Unknown _shape: {_shape}", status=400)
 
         res = {
             'ok': True,
