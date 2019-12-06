@@ -1,7 +1,8 @@
 import asyncio
 import sqlite3
-import threading
 import time
+
+import aiosqlite
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -11,9 +12,9 @@ from quart import request, jsonify, current_app as app
 from quart.views import MethodView
 
 from csvapi.errors import APIError
-from csvapi.utils import get_db_info, get_executor
+from csvapi.utils import get_db_info
 
-connections = threading.local()
+loop = asyncio.get_event_loop()
 
 ROWS_LIMIT = 100
 SQL_TIME_LIMIT_MS = 1000
@@ -51,31 +52,15 @@ class TableView(MethodView):
         pass
 
     async def execute(self, sql, db_info, params=None):
-        """Executes sql against db_name in a thread"""
-        def sql_operation_in_thread(logger):
-            conn = getattr(connections, db_info['db_name'], None)
-            if not conn:
-                conn = sqlite3.connect(
-                    f"file:{db_info['db_path']}?immutable=1",
-                    uri=True,
-                    check_same_thread=False,
-                )
-                prepare_connection(conn)
-                setattr(connections, db_info['db_name'], conn)
-
-            with sqlite_timelimit(conn, SQL_TIME_LIMIT_MS):
-                try:
-                    cursor = conn.cursor()
-                    cursor.execute(sql, params or {})
-                    rows = cursor.fetchall()
-                except Exception:
-                    logger.error(f"ERROR: conn={conn}, sql = {repr(sql)}, params = {params}")
-                    raise
-            return rows, cursor.description
-
-        return await asyncio.get_event_loop().run_in_executor(
-            get_executor(), sql_operation_in_thread, app.logger
-        )
+        async with aiosqlite.connect(f"file:{db_info['db_path']}?immutable=1", uri=True) as conn:
+            prepare_connection(conn)
+            try:
+                async with conn.execute(sql, params or {}) as cursor:
+                    rows = await cursor.fetchall()
+                    return rows, cursor.description
+            except Exception:
+                app.logger.error(f"ERROR: conn={conn}, sql = {repr(sql)}, params = {params}")
+                raise
 
     async def data(self, db_info):
         limit = request.args.get('_size', ROWS_LIMIT)
