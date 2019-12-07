@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Replace requests by aiohttp for asynchronous http requests, and use asyncio driver for SQLite. Also replace every format() string to use only f"strings. [#46](https://github.com/etalab/csvapi/pull/46)
 
 ## 0.1.0 (2019-09-06)
 
