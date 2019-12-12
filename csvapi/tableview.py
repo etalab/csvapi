@@ -4,7 +4,7 @@ import time
 
 import aiosqlite
 
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 from pathlib import Path
 
 
@@ -26,8 +26,8 @@ def prepare_connection(conn):
     conn.text_factory = lambda x: str(x, 'utf-8', 'replace')
 
 
-@contextmanager
-def sqlite_timelimit(conn, ms):
+@asynccontextmanager
+async def sqlite_timelimit(conn, ms):
     deadline = time.time() + (ms / 1000)
     # n is the number of SQLite virtual machine instructions that will be
     # executed between each check. It's hard to know what to pick here.
@@ -41,9 +41,9 @@ def sqlite_timelimit(conn, ms):
         if time.time() >= deadline:
             return 1
 
-    conn.set_progress_handler(handler, n)
+    await conn.set_progress_handler(handler, n)
     yield
-    conn.set_progress_handler(None, n)
+    await conn.set_progress_handler(None, n)
 
 
 class TableView(MethodView):
@@ -55,9 +55,10 @@ class TableView(MethodView):
         async with aiosqlite.connect(f"file:{db_info['db_path']}?immutable=1", uri=True) as conn:
             prepare_connection(conn)
             try:
-                async with conn.execute(sql, params or {}) as cursor:
-                    rows = await cursor.fetchall()
-                    return rows, cursor.description
+                async with sqlite_timelimit(conn, SQL_TIME_LIMIT_MS):
+                    async with conn.execute(sql, params or {}) as cursor:
+                        rows = await cursor.fetchall()
+                        return rows, cursor.description
             except Exception:
                 app.logger.error(f"ERROR: conn={conn}, sql = {repr(sql)}, params = {params}")
                 raise

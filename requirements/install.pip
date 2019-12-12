@@ -1,4 +1,4 @@
-aiosqlite==0.10.0
+aiosqlite==0.11.0
 click_default_group==1.2.1
 click==7.0
 agate==1.6.1
