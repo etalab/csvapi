@@ -4,7 +4,7 @@ import time
 
 import aiosqlite
 
-from contextlib import contextmanager, asynccontextmanager
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 
