@@ -19,7 +19,7 @@ class ParseView(MethodView):
 
     @staticmethod
     async def do_parse(url, urlhash, encoding, storage, logger, sniff_limit, max_file_size):
-        logger.debug('* do_parse_in_thread %s (%s)', urlhash, url)
+        logger.debug('* do_parse %s (%s)', urlhash, url)
         tmp = tempfile.NamedTemporaryFile(delete=False)
         chunk_count = 0
         chunk_size = 1024

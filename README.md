@@ -35,7 +35,6 @@ Usage: csvapi serve [OPTIONS]
 Options:
     --ssl-key TEXT             Path to SSL key
     --ssl-cert TEXT            Path to SSL certificate
-    -w, --max-workers INTEGER  Max number of ThreadPoolExecutor workers
     --cache / --no-cache       Do not parse CSV again if DB already exists
     --reload                   Automatically reload if code change detected
     --debug                    Enable debug mode - useful for development
