@@ -1,10 +1,9 @@
 import asyncio
 import sqlite3
 import time
+import threading
 
-import aiosqlite
-
-from contextlib import asynccontextmanager
+from contextlib import contextmanager
 from pathlib import Path
 
 
@@ -12,9 +11,9 @@ from quart import request, jsonify, current_app as app
 from quart.views import MethodView
 
 from csvapi.errors import APIError
-from csvapi.utils import get_db_info
+from csvapi.utils import get_db_info, get_executor
 
-loop = asyncio.get_event_loop()
+connections = threading.local()
 
 ROWS_LIMIT = 100
 SQL_TIME_LIMIT_MS = 1000
@@ -26,8 +25,8 @@ def prepare_connection(conn):
     conn.text_factory = lambda x: str(x, 'utf-8', 'replace')
 
 
-@asynccontextmanager
-async def sqlite_timelimit(conn, ms):
+@contextmanager
+def sqlite_timelimit(conn, ms):
     deadline = time.time() + (ms / 1000)
     # n is the number of SQLite virtual machine instructions that will be
     # executed between each check. It's hard to know what to pick here.
@@ -41,9 +40,9 @@ async def sqlite_timelimit(conn, ms):
         if time.time() >= deadline:
             return 1
 
-    await conn.set_progress_handler(handler, n)
+    conn.set_progress_handler(handler, n)
     yield
-    await conn.set_progress_handler(None, n)
+    conn.set_progress_handler(None, n)
 
 
 class TableView(MethodView):
@@ -52,16 +51,33 @@ class TableView(MethodView):
         pass
 
     async def execute(self, sql, db_info, params=None):
-        async with aiosqlite.connect(f"file:{db_info['db_path']}?immutable=1", uri=True) as conn:
-            prepare_connection(conn)
-            try:
-                async with sqlite_timelimit(conn, SQL_TIME_LIMIT_MS):
-                    async with conn.execute(sql, params or {}) as cursor:
-                        rows = await cursor.fetchall()
-                        return rows, cursor.description
-            except Exception:
-                app.logger.error(f"ERROR: conn={conn}, sql = {repr(sql)}, params = {params}")
-                raise
+        """Executes sql against db_name in a thread"""
+        def sql_operation_in_thread(logger):
+            conn = getattr(connections, db_info['db_name'], None)
+            if not conn:
+                conn = sqlite3.connect(
+                    'file:{}?immutable=1'.format(db_info['db_path']),
+                    uri=True,
+                    check_same_thread=False,
+                )
+                prepare_connection(conn)
+                setattr(connections, db_info['db_name'], conn)
+
+            with sqlite_timelimit(conn, SQL_TIME_LIMIT_MS):
+                try:
+                    cursor = conn.cursor()
+                    cursor.execute(sql, params or {})
+                    rows = cursor.fetchall()
+                except Exception:
+                    logger.error('ERROR: conn={}, sql = {}, params = {}'.format(
+                        conn, repr(sql), params
+                    ))
+                    raise
+            return rows, cursor.description
+
+        return await asyncio.get_event_loop().run_in_executor(
+            get_executor(), sql_operation_in_thread, app.logger
+        )
 
     async def data(self, db_info):
         limit = request.args.get('_size', ROWS_LIMIT)
