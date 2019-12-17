@@ -1,7 +1,7 @@
 import asyncio
 import sqlite3
-import threading
 import time
+import threading
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -88,11 +88,11 @@ class TableView(MethodView):
         offset = request.args.get('_offset')
 
         cols = 'rowid, *' if rowid else '*'
-        sql = 'SELECT {} FROM [{}]'.format(cols, db_info['table_name'])
+        sql = f"SELECT {cols} FROM [{db_info['table_name']}]"
         if sort:
-            sql += ' ORDER BY [{}]'.format(sort)
+            sql += f" ORDER BY [{sort}]"
         elif sort_desc:
-            sql += ' ORDER BY [{}] DESC'.format(sort_desc)
+            sql += f" ORDER BY [{sort_desc}] DESC"
         else:
             sql += ' ORDER BY rowid'
         sql += ' LIMIT :l'
@@ -109,7 +109,7 @@ class TableView(MethodView):
 
         if total:
             r, d = await self.execute(
-                'SELECT COUNT(*) FROM [{}]'.format(db_info['table_name']),
+                f"SELECT COUNT(*) FROM [{db_info['table_name']}]",
                 db_info
             )
             res['total'] = r[0][0]
@@ -138,7 +138,7 @@ class TableView(MethodView):
         elif _shape == 'lists':
             rows = data['rows']
         else:
-            raise APIError('Unknown _shape: {}'.format(_shape), status=400)
+            raise APIError(f"Unknown _shape: {_shape}", status=400)
 
         res = {
             'ok': True,
