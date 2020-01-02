@@ -87,8 +87,27 @@ class TableView(MethodView):
         sort_desc = request.args.get('_sort_desc')
         offset = request.args.get('_offset')
 
+        # get filter arguments, like column__exact=xxx
+        filters = []
+        for key, value in request.args.items():
+            if not key.startswith('_') and '__' in key:
+                filters.append((key, value))
+
         cols = 'rowid, *' if rowid else '*'
-        sql = f"SELECT {cols} FROM [{db_info['table_name']}]"
+        sql = 'SELECT {} FROM [{}]'.format(cols, db_info['table_name'])
+        wheres = []
+        for (f_key, f_value) in filters:
+            comparator = f_key.split('__')[1]
+            column = f_key.split('__')[0]
+            if comparator == 'exact':
+                wheres.append('[{}] = "{}"'.format(column, f_value))
+            elif comparator == 'contains':
+                wheres.append('[{}] LIKE "%{}%"'.format(column, f_value))
+            else:
+                app.logger.warning('Dropped unknown comparator in {}'.format(f_key))
+        if wheres:
+            sql += ' WHERE '
+            sql += ' AND '.join(wheres)
         if sort:
             sql += f" ORDER BY [{sort}]"
         elif sort_desc:
