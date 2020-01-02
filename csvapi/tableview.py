@@ -79,6 +79,22 @@ class TableView(MethodView):
             get_executor(), sql_operation_in_thread, app.logger
         )
 
+    async def add_filters_to_sql(self, sql, filters):
+        wheres = []
+        for (f_key, f_value) in filters:
+            comparator = f_key.split('__')[1]
+            column = f_key.split('__')[0]
+            if comparator == 'exact':
+                wheres.append(f"[{column}] = '{f_value}'")
+            elif comparator == 'contains':
+                wheres.append(f"[{column}] LIKE '%{f_value}%'")
+            else:
+                app.logger.warning(f'Dropped unknown comparator in {f_key}')
+        if wheres:
+            sql += ' WHERE '
+            sql += ' AND '.join(wheres)
+        return sql
+
     async def data(self, db_info):
         limit = request.args.get('_size', ROWS_LIMIT)
         rowid = not (request.args.get('_rowid') == 'hide')
@@ -95,23 +111,11 @@ class TableView(MethodView):
 
         cols = 'rowid, *' if rowid else '*'
         sql = 'SELECT {} FROM [{}]'.format(cols, db_info['table_name'])
-        wheres = []
-        for (f_key, f_value) in filters:
-            comparator = f_key.split('__')[1]
-            column = f_key.split('__')[0]
-            if comparator == 'exact':
-                wheres.append('[{}] = "{}"'.format(column, f_value))
-            elif comparator == 'contains':
-                wheres.append('[{}] LIKE "%{}%"'.format(column, f_value))
-            else:
-                app.logger.warning('Dropped unknown comparator in {}'.format(f_key))
-        if wheres:
-            sql += ' WHERE '
-            sql += ' AND '.join(wheres)
+        sql = await self.add_filters_to_sql(sql, filters)
         if sort:
-            sql += f" ORDER BY [{sort}]"
+            sql += f' ORDER BY [{sort}]'
         elif sort_desc:
-            sql += f" ORDER BY [{sort_desc}] DESC"
+            sql += f' ORDER BY [{sort_desc}] DESC'
         else:
             sql += ' ORDER BY rowid'
         sql += ' LIMIT :l'
@@ -127,10 +131,9 @@ class TableView(MethodView):
         }
 
         if total:
-            r, d = await self.execute(
-                f"SELECT COUNT(*) FROM [{db_info['table_name']}]",
-                db_info
-            )
+            sql = f"SELECT COUNT(*) FROM [{db_info['table_name']}]"
+            sql = await self.add_filters_to_sql(sql, filters)
+            r, d = await self.execute(sql, db_info)
             res['total'] = r[0][0]
 
         return res
