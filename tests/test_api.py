@@ -362,6 +362,7 @@ async def test_api_filters_contains_string(rmock, uploaded_csv_filters, client):
 
 
 async def test_api_filters_contains_exact_int(rmock, uploaded_csv_filters, client):
+    "NB: suboptimal API result, int value returns a float"
     res = await client.get(f"/api/{MOCK_CSV_HASH_FILTERS}?value__exact=1")
     assert res.status_code == 200
     jsonres = await res.json

@@ -236,6 +236,15 @@ The `_total` argument is used to display or hide the total number of rows (indep
 }
 ```
 
+#### Column based filters
+
+By adding `{column}__{comparator}={value}` to the query string, you can filter the results based on the following criterions:
+- `{column}` must be a valid column in your CSV
+- `{comparator}` is `exact` (SQL `= {value}`) or `contains` (SQL `LIKE %{value}%`)
+- `{value}` is the value you're filtering the column against
+
+You can add multiple filters, they will be joined with a `AND` at the SQL level.
+
 ## Production deployment
 
 Some example [Ansible 2](https://www.ansible.com) roles are [available here](/ansible).
