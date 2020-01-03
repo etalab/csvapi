@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Fix aiohttp import [#52](https://github.com/etalab/csvapi/pull/52)
 
 ## 1.0.0 (2020-01-03)
 
