@@ -79,7 +79,7 @@ class TableView(MethodView):
             get_executor(), sql_operation_in_thread, app.logger
         )
 
-    async def add_filters_to_sql(self, sql, filters):
+    def add_filters_to_sql(self, sql, filters):
         wheres = []
         params = {}
         for (f_key, f_value) in filters:
@@ -114,7 +114,7 @@ class TableView(MethodView):
 
         cols = 'rowid, *' if rowid else '*'
         sql = 'SELECT {} FROM [{}]'.format(cols, db_info['table_name'])
-        sql, params = await self.add_filters_to_sql(sql, filters)
+        sql, params = self.add_filters_to_sql(sql, filters)
         if sort:
             sql += f' ORDER BY [{sort}]'
         elif sort_desc:
@@ -138,7 +138,7 @@ class TableView(MethodView):
 
         if total:
             sql = f"SELECT COUNT(*) FROM [{db_info['table_name']}]"
-            sql, params = await self.add_filters_to_sql(sql, filters)
+            sql, params = self.add_filters_to_sql(sql, filters)
             r, d = await self.execute(sql, db_info, params=params)
             res['total'] = r[0][0]
 
