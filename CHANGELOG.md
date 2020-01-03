@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 1.0.1 (2020-01-03)
 
 - Fix aiohttp import [#52](https://github.com/etalab/csvapi/pull/52)
 
