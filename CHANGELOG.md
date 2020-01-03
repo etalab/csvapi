@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 1.0.0 (2020-01-03)
 
 - Add filters support [#50](https://github.com/etalab/csvapi/pull/50)
 - Replace requests by aiohttp for asynchronous http requests. Also replace every format() string to use only f"strings. [#46](https://github.com/etalab/csvapi/pull/46)
