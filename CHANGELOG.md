@@ -2,6 +2,7 @@
 
 ## Current (in progress)
 
+- Add filters support [#50](https://github.com/etalab/csvapi/pull/50)
 - Replace requests by aiohttp for asynchronous http requests. Also replace every format() string to use only f"strings. [#46](https://github.com/etalab/csvapi/pull/46)
 
 ## 0.1.0 (2019-09-06)

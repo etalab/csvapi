@@ -79,6 +79,25 @@ class TableView(MethodView):
             get_executor(), sql_operation_in_thread, app.logger
         )
 
+    def add_filters_to_sql(self, sql, filters):
+        wheres = []
+        params = {}
+        for (f_key, f_value) in filters:
+            comparator = f_key.split('__')[1]
+            column = f_key.split('__')[0]
+            if comparator == 'exact':
+                wheres.append(f"[{column}] = :filter_value")
+                params['filter_value'] = f_value
+            elif comparator == 'contains':
+                wheres.append(f"[{column}] LIKE :filter_value")
+                params['filter_value'] = f'%{f_value}%'
+            else:
+                app.logger.warning(f'Dropped unknown comparator in {f_key}')
+        if wheres:
+            sql += ' WHERE '
+            sql += ' AND '.join(wheres)
+        return sql, params
+
     async def data(self, db_info):
         limit = request.args.get('_size', ROWS_LIMIT)
         rowid = not (request.args.get('_rowid') == 'hide')
@@ -87,19 +106,29 @@ class TableView(MethodView):
         sort_desc = request.args.get('_sort_desc')
         offset = request.args.get('_offset')
 
+        # get filter arguments, like column__exact=xxx
+        filters = []
+        for key, value in request.args.items():
+            if not key.startswith('_') and '__' in key:
+                filters.append((key, value))
+
         cols = 'rowid, *' if rowid else '*'
-        sql = f"SELECT {cols} FROM [{db_info['table_name']}]"
+        sql = 'SELECT {} FROM [{}]'.format(cols, db_info['table_name'])
+        sql, params = self.add_filters_to_sql(sql, filters)
         if sort:
-            sql += f" ORDER BY [{sort}]"
+            sql += f' ORDER BY [{sort}]'
         elif sort_desc:
-            sql += f" ORDER BY [{sort_desc}] DESC"
+            sql += f' ORDER BY [{sort_desc}] DESC'
         else:
             sql += ' ORDER BY rowid'
         sql += ' LIMIT :l'
+        params['l'] = limit
         if offset:
             sql += ' OFFSET :o'
+            params['o'] = offset
+        print(sql, params)
         rows, description = await self.execute(
-            sql, db_info, params={'l': limit, 'o': offset}
+            sql, db_info, params=params
         )
         columns = [r[0] for r in description]
         res = {
@@ -108,10 +137,9 @@ class TableView(MethodView):
         }
 
         if total:
-            r, d = await self.execute(
-                f"SELECT COUNT(*) FROM [{db_info['table_name']}]",
-                db_info
-            )
+            sql = f"SELECT COUNT(*) FROM [{db_info['table_name']}]"
+            sql, params = self.add_filters_to_sql(sql, filters)
+            r, d = await self.execute(sql, db_info, params=params)
             res['total'] = r[0][0]
 
         return res
