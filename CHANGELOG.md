@@ -1,5 +1,9 @@
 # Changelog
 
+## Current (in progress)
+
+- Nothing yet
+
 ## 1.0.0 (2020-01-03)
 
 - Add filters support [#50](https://github.com/etalab/csvapi/pull/50)
