@@ -13,9 +13,6 @@ from csvapi.utils import get_db_info
 
 class ExportView(TableView):
 
-    async def options(self):
-        pass
-
     async def get(self, urlhash):
         "This will inherit sorting and filtering from TableView"
         db_info = get_db_info(urlhash)
