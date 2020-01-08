@@ -17,7 +17,7 @@ class ExportView(TableView):
         pass
 
     async def get(self, urlhash):
-        "This will inherit sorting/filtering/ordering from TableView"
+        "This will inherit sorting and filtering from TableView"
         db_info = get_db_info(urlhash)
         p = Path(db_info['db_path'])
         if not p.exists():
