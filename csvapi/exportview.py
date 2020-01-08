@@ -1,7 +1,7 @@
 import csv
 import sqlite3
 
-from io import BytesIO, StringIO
+from io import StringIO
 from pathlib import Path
 
 from quart import make_response
