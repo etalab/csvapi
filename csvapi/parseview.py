@@ -14,9 +14,6 @@ from csvapi.utils import already_exists, get_hash
 
 class ParseView(MethodView):
 
-    async def options(self):
-        pass
-
     @staticmethod
     async def do_parse(url, urlhash, encoding, storage, logger, sniff_limit, max_file_size):
         logger.debug('* do_parse %s (%s)', urlhash, url)
