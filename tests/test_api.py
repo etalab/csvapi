@@ -380,3 +380,13 @@ async def test_api_filters_contains_exact_float(rmock, uploaded_csv_filters, cli
     assert jsonres['rows'] == [
         [1, 'first', '12:30', 1.0],
     ]
+
+
+async def test_api_and_filters(rmock, uploaded_csv_filters, client):
+    res = await client.get(f"/api/{MOCK_CSV_HASH_FILTERS}?id__contains=fir&value__exact=1")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['total'] == 1
+    assert jsonres['rows'] == [
+        [1, 'first', '12:30', 1.0],
+    ]
