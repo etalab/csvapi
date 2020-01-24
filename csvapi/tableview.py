@@ -47,9 +47,6 @@ def sqlite_timelimit(conn, ms):
 
 class TableView(MethodView):
 
-    async def options(self):
-        pass
-
     async def execute(self, sql, db_info, params=None):
         """Executes sql against db_name in a thread"""
         def sql_operation_in_thread(logger):

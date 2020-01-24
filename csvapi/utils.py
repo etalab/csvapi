@@ -30,7 +30,11 @@ def get_executor():
 
 
 def get_hash(to_hash):
-    return hashlib.md5(to_hash.encode('utf-8')).hexdigest()
+    return get_hash_bytes(to_hash.encode('utf-8'))
+
+
+def get_hash_bytes(to_hash):
+    return hashlib.md5(to_hash).hexdigest()
 
 
 def already_exists(urlhash):
