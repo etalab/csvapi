@@ -47,9 +47,6 @@ def sqlite_timelimit(conn, ms):
 
 class TableView(MethodView):
 
-    async def options(self):
-        pass
-
     async def execute(self, sql, db_info, params=None):
         """Executes sql against db_name in a thread"""
         def sql_operation_in_thread(logger):
@@ -86,11 +83,11 @@ class TableView(MethodView):
             comparator = f_key.split('__')[1]
             column = f_key.split('__')[0]
             if comparator == 'exact':
-                wheres.append(f"[{column}] = :filter_value")
-                params['filter_value'] = f_value
+                wheres.append(f"[{column}] = :filter_value_{column}")
+                params[f'filter_value_{column}'] = f_value
             elif comparator == 'contains':
-                wheres.append(f"[{column}] LIKE :filter_value")
-                params['filter_value'] = f'%{f_value}%'
+                wheres.append(f"[{column}] LIKE :filter_value_{column}")
+                params[f'filter_value_{column}'] = f'%{f_value}%'
             else:
                 app.logger.warning(f'Dropped unknown comparator in {f_key}')
         if wheres:

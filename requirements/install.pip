@@ -6,6 +6,7 @@ aiohttp==3.5.4
 validators==0.13.0
 agate-excel==0.2.3
 Quart==0.9.1
+quart-cors==0.2.0
 raven==6.10.0
 cchardet==2.1.4
 python-stdnum==1.11
