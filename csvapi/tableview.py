@@ -95,13 +95,13 @@ class TableView(MethodView):
             sql += ' AND '.join(wheres)
         return sql, params
 
-    async def data(self, db_info):
-        limit = request.args.get('_size', ROWS_LIMIT)
-        rowid = not (request.args.get('_rowid') == 'hide')
-        total = not (request.args.get('_total') == 'hide')
+    async def data(self, db_info, export=False):
+        limit = request.args.get('_size', ROWS_LIMIT) if not export else -1
+        rowid = not (request.args.get('_rowid') == 'hide') and not export
+        total = not (request.args.get('_total') == 'hide') and not export
         sort = request.args.get('_sort')
         sort_desc = request.args.get('_sort_desc')
-        offset = request.args.get('_offset')
+        offset = request.args.get('_offset') if not export else 0
 
         # get filter arguments, like column__exact=xxx
         filters = []
@@ -123,11 +123,15 @@ class TableView(MethodView):
         if offset:
             sql += ' OFFSET :o'
             params['o'] = offset
-        print(sql, params)
         rows, description = await self.execute(
             sql, db_info, params=params
         )
+
         columns = [r[0] for r in description]
+
+        if export:
+            return columns, rows
+
         res = {
             'columns': columns,
             'rows': list(rows),
