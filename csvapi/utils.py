@@ -33,8 +33,8 @@ def get_hash(to_hash):
     return hashlib.md5(to_hash.encode('utf-8')).hexdigest()
 
 
-def already_exists(urlhash):
+def already_exists(filehash):
     cache_enabled = app.config.get('CSV_CACHE_ENABLED')
     if not cache_enabled:
         return False
-    return Path(get_db_info(urlhash)['db_path']).exists()
+    return Path(get_db_info(filehash)['db_path']).exists()
