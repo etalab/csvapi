@@ -17,9 +17,6 @@ X = xxhash.xxh64()
 
 class ParseView(MethodView):
 
-    async def options(self):
-        pass
-
     @staticmethod
     async def do_parse(url, encoding, storage, logger, sniff_limit, max_file_size):
         logger.debug('* do_parse (%s)', url)
