@@ -1,4 +1,5 @@
-import hashlib
+import os
+import xxhash
 
 from concurrent import futures
 from pathlib import Path
@@ -34,7 +35,7 @@ def get_hash(to_hash):
 
 
 def get_hash_bytes(to_hash):
-    return hashlib.md5(to_hash).hexdigest()
+    return xxhash.xxh64(to_hash).hexdigest()
 
 
 def already_exists(filehash):
