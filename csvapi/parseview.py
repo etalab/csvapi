@@ -25,6 +25,7 @@ class ParseView(MethodView):
         chunk_size = 1024
         start_dl = time.time()
         try:
+            # TODO: Is it possible to know any change in the hash of a file without downloading it to check it?
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     while True:
