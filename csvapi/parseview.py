@@ -11,7 +11,7 @@ from quart.views import MethodView
 
 from csvapi.errors import APIError
 from csvapi.parser import parse
-from csvapi.utils import already_exists, get_hash
+from csvapi.utils import already_exists, get_hash, max_age
 
 X = xxhash.xxh64()
 
@@ -70,10 +70,10 @@ class ParseView(MethodView):
         if not validators.url(url):
             raise APIError('Malformed url parameter.', status=400)
         urlhash = get_hash(url)
+        storage = app.config['DB_ROOT_DIR']
 
-        if not already_exists(urlhash):
+        if not max_age(storage, urlhash):
             try:
-                storage = app.config['DB_ROOT_DIR']
                 filehash = await self.do_parse(
                     url=url,
                     urlhash=urlhash,

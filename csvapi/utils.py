@@ -1,4 +1,6 @@
 import os
+import datetime
+
 import xxhash
 
 from concurrent import futures
@@ -12,7 +14,10 @@ executor = None
 def get_db_info(urlhash, storage=None):
     # app.config not thread safe, sometimes we need to pass storage directly
     storage = storage or app.config['DB_ROOT_DIR']
-    dbpath = f"{storage}/{urlhash}.db"
+    for f in os.listdir(storage):
+        if f.startswith(urlhash):
+            dbpath = f"{storage}/{f}"
+            break
     return {
         'dsn': f"sqlite:///{dbpath}",
         'db_name': urlhash,
@@ -43,3 +48,21 @@ def already_exists(filehash):
     if not cache_enabled:
         return False
     return Path(get_db_info(filehash)['db_path']).exists()
+
+
+def max_age(storage, urlhash):
+    max_age = app.config['CACHE_MAX_AGE']
+    for f in os.listdir(storage):
+        if f.startswith(urlhash):
+            mod_time = os.stat(f).st_mtime
+            mod_timestamp = datetime.datetime.fromtimestamp(mod_time)
+            later_time = datetime.datetime.now()
+            file_age = later_time - mod_timestamp
+            if file_age.days > max_age:
+                return True
+            else:
+                break
+    return False
+
+
+
