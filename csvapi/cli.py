@@ -46,7 +46,7 @@ def serve(dbs, host, port, debug, reload, cache, cache_max_age, max_workers, ssl
     app.config.update({
         'DB_ROOT_DIR': dbs,
         'CSV_CACHE_ENABLED': cache,
-        'CACHE_MAX_AGE': cache_max_age
+        'CACHE_MAX_AGE': cache_max_age,
         'MAX_WORKERS': max_workers,
         'DEBUG': debug,
         # TODO this probably does not exist in Quart

@@ -11,7 +11,7 @@ from quart.views import MethodView
 
 from csvapi.errors import APIError
 from csvapi.parser import parse
-from csvapi.utils import already_exists, get_hash, max_age
+from csvapi.utils import is_hash_relevant, get_hash, age_valid
 
 X = xxhash.xxh64()
 
@@ -23,7 +23,6 @@ class ParseView(MethodView):
         tmp = tempfile.NamedTemporaryFile(delete=False)
         chunk_count = 0
         chunk_size = 1024
-        start_dl = time.time()
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
@@ -39,29 +38,23 @@ class ParseView(MethodView):
                         chunk_count += 1
             tmp.close()
             filehash = X.hexdigest()
-            print(filehash)
             logger.debug('* Downloaded %s', filehash)
-            end_dl = time.time()
-            print(f"--------------------------------> download time: {end_dl - start_dl}<------------------------------------")
-            if not already_exists(filehash):
+            if not is_hash_relevant(urlhash, filehash):
+                print("HASH IS NOT RELEVANT")
                 try:
-                    start_parse = time.time()
                     logger.debug('* Parsing %s...', filehash)
-                    parse(tmp.name, filehash, storage, encoding=encoding, sniff_limit=sniff_limit)
+                    parse(tmp.name, urlhash, filehash, storage, encoding=encoding, sniff_limit=sniff_limit)
                     logger.debug('* Parsed %s', filehash)
-                    end_parse = time.time()
-                    print(f"--------------------------------> parse time: {end_parse - start_parse}<------------------------------------")
                 except Exception as e:
                     raise APIError('Error parsing CSV: %s' % e)
             else:
-                logger.info(f"{filehash}.db already exists, skipping parse.")
-            return filehash
+                print("HASH IS RELEVANT")
+                logger.info(f"File hash for {urlhash} is relevant, skipping parse.")
         finally:
             logger.debug('Removing tmp file: %s', tmp.name)
             os.unlink(tmp.name)
 
     async def get(self):
-        # start = time.time()
         app.logger.debug('* Starting ParseView.get')
         url = request.args.get('url')
         encoding = request.args.get('encoding')
@@ -72,9 +65,10 @@ class ParseView(MethodView):
         urlhash = get_hash(url)
         storage = app.config['DB_ROOT_DIR']
 
-        if not max_age(storage, urlhash):
+        if not age_valid(storage, urlhash):
+            print("AGE IS NOT OK")
             try:
-                filehash = await self.do_parse(
+                await self.do_parse(
                     url=url,
                     urlhash=urlhash,
                     encoding=encoding,
@@ -86,12 +80,10 @@ class ParseView(MethodView):
             except Exception as e:
                 raise APIError('Error parsing CSV: %s' % e)
         else:
-            app.logger.info(f"{urlhash}.db already exists, skipping parse.")
+            print("AGE IS OK")
+            app.logger.info(f"Db for {urlhash} is young enough, serving as is.")
         scheme = 'https' if app.config.get('FORCE_SSL') else request.scheme
-        # end = time.time()
-        # timer = end - start
-        # print(f"--------------------------------> total execution time: {timer}<------------------------------------")
         return jsonify({
             'ok': True,
-            'endpoint': f"{scheme}://{request.host}/api/{filehash}"
+            'endpoint': f"{scheme}://{request.host}/api/{urlhash}"
         })

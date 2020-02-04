@@ -1,10 +1,11 @@
 import os
+import uuid
 
 import agate
 import agatesql  # noqa
 import cchardet as chardet
 
-from csvapi.utils import get_db_info
+from csvapi.utils import get_db_info, add_entry_to_sys_db
 from csvapi.type_tester import agate_tester
 
 SNIFF_LIMIT = 4096
@@ -33,15 +34,17 @@ def from_excel(filepath):
     return agate.Table.from_xls(filepath, column_types=agate_tester())
 
 
-def to_sql(table, urlhash, storage):
-    db_info = get_db_info(urlhash, storage=storage)
-    table.to_sql(db_info['dsn'], db_info['db_name'], overwrite=True)
+def to_sql(table, urlhash, filehash, storage):
+    db_name = str(uuid.uuid4())
+    db_dsn = f"sqlite:///{storage}/{db_name}.db"
+    table.to_sql(db_dsn, db_name, overwrite=True)
+    add_entry_to_sys_db(db_name, urlhash, filehash)
 
 
-def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT):
+def parse(filepath, urlhash, filehash, storage, encoding=None, sniff_limit=SNIFF_LIMIT):
     if is_binary(filepath):
         table = from_excel(filepath)
     else:
         encoding = detect_encoding(filepath) if not encoding else encoding
         table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit)
-    return to_sql(table, urlhash, storage)
+    return to_sql(table, urlhash, filehash, storage)
