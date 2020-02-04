@@ -146,10 +146,11 @@ class TableView(MethodView):
         return res
 
     async def get(self, urlhash):
-        db_info = get_db_info(urlhash)
-        p = Path(db_info['db_path'])
-        if not p.exists():
-            raise APIError('Database has probably been removed.', status=404)
+        db_info = get_db_info(urlhash=urlhash)
+        if db_info is not None:
+            p = Path(db_info['db_path'])
+            if not p.exists():
+                raise APIError('Database has probably been removed.', status=404)
 
         start = time.time()
         try:

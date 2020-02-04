@@ -5,7 +5,7 @@ import agate
 import agatesql  # noqa
 import cchardet as chardet
 
-from csvapi.utils import get_db_info, add_entry_to_sys_db
+from csvapi.utils import add_entry_to_sys_db
 from csvapi.type_tester import agate_tester
 
 SNIFF_LIMIT = 4096
@@ -37,7 +37,7 @@ def from_excel(filepath):
 def to_sql(table, urlhash, filehash, storage):
     db_name = str(uuid.uuid4())
     db_dsn = f"sqlite:///{storage}/{db_name}.db"
-    table.to_sql(db_dsn, db_name, overwrite=True)
+    table.to_sql(db_dsn, urlhash, overwrite=True)
     add_entry_to_sys_db(db_name, urlhash, filehash)
 
 

@@ -45,14 +45,23 @@ def add_entry_to_sys_db(uuid, urlhash, filehash):
 
 
 
-def get_db_info(urlhash, storage=None):
+def get_db_info(urlhash=None, filehash=None, storage=None):
     storage = storage or app.config['DB_ROOT_DIR']
 
     sys_db = get_sys_db_info()
     conn = sqlite3.connect(sys_db['db_path'])
     c = conn.cursor()
-    t = (urlhash,)
-    c.execute('SELECT * FROM csvapi_sys WHERE urlhash=?', t)
+
+    # The function permits to seek by urlhash and filehash because of the uploadview.
+    # Do we want to keep things this way?
+
+    if urlhash is not None:
+        c.execute('SELECT * FROM csvapi_sys WHERE urlhash=?', (urlhash,))
+    elif filehash is not None:
+        c.execute('SELECT * FROM csvapi_sys WHERE filehash=?', (filehash,))
+    else:
+        raise RuntimeError('Func get_db_info need at least one not none argument')
+    
     res = c.fetchone()
     if not res:
         return None
@@ -61,7 +70,7 @@ def get_db_info(urlhash, storage=None):
     urlhash = res[2]
     filehash = res[3]
     creadate = res[4]
-    dbpath = f"{storage}/{dbuuid}"
+    dbpath = f"{storage}/{dbuuid}.db"
     dbname = dbuuid
 
     conn.close()
@@ -95,8 +104,16 @@ def get_hash_bytes(to_hash):
     return xxhash.xxh64(to_hash).hexdigest()
 
 
-def already_exists(urlhash):
-    pass
+def already_exists(filehash):
+    cache_enabled = app.config.get('CSV_CACHE_ENABLED')
+    if not cache_enabled:
+        return False
+    
+    db = get_db_info(filehash=filehash)
+    if db is None:
+        return False
+    
+    return True
 
 
 def is_hash_relevant(urlhash, filehash):
@@ -104,10 +121,13 @@ def is_hash_relevant(urlhash, filehash):
     if not cache_enabled:
         return False
 
-    db = get_db_info(urlhash)
+    db = get_db_info(urlhash=urlhash)
     if db is None:
         return False
 
+    # Question here is to wether or not to seek by urlhash or directly by filehash.
+    # Seeking by filehash would save the hash comparison but are we sure we are getting the right entry for the urlhash we wanted?
+    # The answer is yes if there can't be more than one entry by urlhash.
     if db['filehash'] == filehash:
         return True
 
@@ -117,7 +137,7 @@ def is_hash_relevant(urlhash, filehash):
 def age_valid(storage, urlhash):
     max_age = app.config['CACHE_MAX_AGE']
 
-    db = get_db_info(urlhash)
+    db = get_db_info(urlhash=urlhash)
     if db is None:
         return False
 
