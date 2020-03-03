@@ -334,6 +334,20 @@ async def test_real_csv_files(client, rmock, csv_path):
     assert len(jsonres['rows']) > 1
 
 
+@pytest.mark.parametrize('csv_path', Path(__file__).parent.glob('samples/real_xls/*.xls*'))
+async def test_real_xls_files(client, rmock, csv_path):
+    with open(csv_path, 'rb') as content:
+        rmock.get(MOCK_CSV_URL, body=content.read())
+    res = await client.get(f"/apify?url={MOCK_CSV_URL}")
+    assert res.status_code == 200
+    res = await client.get(f"/api/{MOCK_CSV_HASH}")
+    # w/ no error and more than 1 column and row we should be OK
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert len(jsonres['columns']) > 0
+    assert len(jsonres['rows']) > 0
+
+
 @pytest.fixture
 async def uploaded_csv_filters(rmock, csv_filters, client):
     content = csv_filters.encode('utf-8')
