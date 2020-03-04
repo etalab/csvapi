@@ -30,7 +30,7 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
 
 def from_excel(filepath):
     import agateexcel  # noqa
-    return agate.Table.from_xls(filepath)
+    return agate.Table.from_xls(filepath, column_types=agate_tester())
 
 
 def to_sql(table, urlhash, storage):
