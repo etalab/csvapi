@@ -334,9 +334,9 @@ async def test_real_csv_files(client, rmock, csv_path):
     assert len(jsonres['rows']) > 1
 
 
-@pytest.mark.parametrize('csv_path', Path(__file__).parent.glob('samples/real_xls/*.xls*'))
-async def test_real_xls_files(client, rmock, csv_path):
-    with open(csv_path, 'rb') as content:
+@pytest.mark.parametrize('xls_path', Path(__file__).parent.glob('samples/real_xls/*.xls*'))
+async def test_real_xls_files(client, rmock, xls_path):
+    with open(xls_path, 'rb') as content:
         rmock.get(MOCK_CSV_URL, body=content.read())
     res = await client.get(f"/apify?url={MOCK_CSV_URL}")
     assert res.status_code == 200
