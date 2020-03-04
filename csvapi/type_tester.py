@@ -25,7 +25,7 @@ class Time(DataType):
         super(Time, self).__init__(**kwargs)
 
     def cast(self, d):
-        if re.match(r"^(?:[01]\d|2[0-3]|\d):[0-5]\d$", d):
+        if re.match(r"^(?:[01]\d|2[0-3]|\d):[0-5]\d$", str(d)):
             return Text().cast(d)
         raise CastError('Can not parse value "%s" as time.' % d)
 
