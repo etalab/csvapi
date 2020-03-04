@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Fix packaging problem
 
 ## 1.0.2 (2020-03-04)
 
