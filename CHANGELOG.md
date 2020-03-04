@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 1.0.2 (2020-03-04)
 
 - Fix XLS parsing [#60](https://github.com/etalab/csvapi/pull/60)
 
