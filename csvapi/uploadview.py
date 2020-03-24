@@ -26,6 +26,8 @@ class UploadView(MethodView):
                 _file.save(_tmpfile)
                 _tmpfile.close()
                 parse(_tmpfile.name, content_hash, storage, sniff_limit=sniff_limit)
+                # Here no urlhash, we need to change the parse code to make urlhash as possible None.
+                # But how will get_db_info in tableview work with such an entry in sys DB?
             finally:
                 os.unlink(_tmpfile.name)
 

@@ -10,3 +10,4 @@ quart-cors==0.2.0
 raven==6.10.0
 cchardet==2.1.4
 python-stdnum==1.11
+xxhash==1.4.3

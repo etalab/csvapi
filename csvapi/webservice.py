@@ -11,6 +11,7 @@ from csvapi.exportview import ExportView
 from csvapi.uploadview import UploadView
 from csvapi.parseview import ParseView
 from csvapi.security import filter_referrers
+from csvapi.utils import create_sys_db
 
 app = Quart(__name__)
 app = cors(app, allow_origin='*')
@@ -29,6 +30,7 @@ if app.config.get('SENTRY_DSN'):
     from raven import Client
     app.extensions['sentry'] = Client(app.config['SENTRY_DSN'])
 
+create_sys_db(app)
 
 def handle_and_print_error():
     sentry_id = None
