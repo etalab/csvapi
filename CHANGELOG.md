@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Protect custom type testers against None values [#66](https://github.com/etalab/csvapi/pull/66)
 
 ## 1.0.3 (2020-03-04)
 
