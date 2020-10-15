@@ -25,6 +25,8 @@ class Time(DataType):
         super(Time, self).__init__(**kwargs)
 
     def cast(self, d):
+        if d is None:
+            return d
         if re.match(r"^(?:[01]\d|2[0-3]|\d):[0-5]\d$", str(d)):
             return Text().cast(d)
         raise CastError('Can not parse value "%s" as time.' % d)
@@ -36,6 +38,8 @@ class SirenSiret(DataType):
         super(SirenSiret, self).__init__()
 
     def cast(self, d):
+        if d is None:
+            return d
         if is_valid_siret(d) or is_valid_siren(d):
             return Text().cast(d)
         raise CastError('Can not parse value "%s" as a SIREN or SIRET.' % d)
