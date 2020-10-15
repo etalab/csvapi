@@ -81,6 +81,22 @@ b<sep>522816651<sep>52281665100056
 """
 
 
+@pytest.fixture
+def csv_custom_types_double_cr():
+    """
+    This is clearly an invalid file (double CR)
+    but it tests an interesting case: None values in
+    columns detected as custom types.
+
+    In this case we'd rather display empty lines and None
+    values than break.
+    """
+    return """id<sep>siren<sep>siret<sep>time\r\r
+a<sep>13002526a5<sep>13002526500013<sep>12:30\r\r
+b<sep>522816651<sep>52281665100056<sep>15:50\r\r
+"""
+
+
 def random_url():
     return f"https://example.com/{uuid.uuid4()}.csv"
 
@@ -166,6 +182,25 @@ async def test_apify_siren_siret_format(rmock, csv_siren_siret, client):
     assert jsonres['rows'] == [
         [1, 'a', '130025265', '13002526500013'],
         [2, 'b', '522816651', '52281665100056'],
+    ]
+
+
+async def test_apify_custom_types_double_cr(rmock, csv_custom_types_double_cr, client):
+    content = csv_custom_types_double_cr.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns'] == ['rowid', 'id', 'siren', 'siret', 'time']
+    assert jsonres['total'] == 5
+    assert jsonres['rows'] == [
+        [1, None, None, None, None],
+        [2, 'a', '13002526a5', '13002526500013', '12:30'],
+        [3, None, None, None, None],
+        [4, 'b', '522816651', '52281665100056', '15:50'],
+        [5, None, None, None, None]
     ]
 
 
