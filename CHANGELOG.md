@@ -3,6 +3,7 @@
 ## Current (in progress)
 
 - Protect custom type testers against None values [#66](https://github.com/etalab/csvapi/pull/66)
+- Fix xlsx file support [#67](https://github.com/etalab/csvapi/pull/67)
 
 ## 1.0.3 (2020-03-04)
 
