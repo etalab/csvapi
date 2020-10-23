@@ -10,19 +10,9 @@ from csvapi.type_tester import agate_tester
 SNIFF_LIMIT = 4096
 
 
-def is_csv(filepath):
-    with os.popen('file {} -b --mime-type'.format(filepath)) as proc:
-        return 'text/plain' in proc.read().lower()
-
-
-def is_xls(filepath):
-    with os.popen('file {} -b --mime-type'.format(filepath)) as proc:
-        return 'application/vnd.ms-excel' in proc.read().lower()
-
-
-def is_xlsx(filepath):
-    with os.popen('file {} -b --mime-type'.format(filepath)) as proc:
-        return 'application/vnd.openxml' in proc.read().lower()
+def detect_type(filepath):
+    with os.popen(f'file {filepath} -b --mime-type') as proc:
+        return proc.read().lower()
 
 
 def detect_encoding(filepath):
@@ -51,16 +41,14 @@ def to_sql(table, urlhash, storage):
 
 
 def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT):
-    if is_xls(filepath):
-        print('XLS FILE')
+    file_type = detect_type(filepath)
+    if 'application/vnd.ms-excel' in file_type:
         table = from_excel(filepath)
-    elif is_xlsx(filepath):
-        print('XLSX FILE')
+    elif 'application/vnd.openxml' in file_type:
         table = from_excel(filepath, xlsx=True)
-    elif is_csv(filepath):
-        print('CSV FILE')
+    elif 'text/plain' in file_type:
         encoding = detect_encoding(filepath) if not encoding else encoding
         table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit)
     else:
-        raise Exception('Unsupported file type')
+        raise Exception(f'Unsupported file type {file_type}')
     return to_sql(table, urlhash, storage)
