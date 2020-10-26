@@ -28,18 +28,25 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
         return agate.Table.from_csv(filepath, encoding=encoding, column_types=agate_tester())
 
 
+def from_excel(filepath, xlsx=False):
+    # Function exists to prevent side-effects after moncky patching with import
+    import agateexcel  # noqa
+    if xlsx:
+        return agate.Table.from_xlsx(filepath, column_types=agate_tester())
+    return agate.Table.from_xls(filepath, column_types=agate_tester())
+
+
 def to_sql(table, urlhash, storage):
     db_info = get_db_info(urlhash, storage=storage)
     table.to_sql(db_info['dsn'], db_info['db_name'], overwrite=True)
 
 
 def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT):
-    import agateexcel  # noqa
     file_type = detect_type(filepath)
     if 'application/vnd.ms-excel' in file_type:
-        table = agate.Table.from_xls(filepath, column_types=agate_tester())
+        table = from_excel(filepath)
     elif 'application/vnd.openxml' in file_type:
-        table = agate.Table.from_xlsx(filepath, column_types=agate_tester())
+        table = from_excel(filepath, xlsx=True)
     elif 'text/plain' in file_type:
         encoding = detect_encoding(filepath) if not encoding else encoding
         table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit)
