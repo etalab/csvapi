@@ -29,7 +29,7 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
 
 
 def from_excel(filepath, xlsx=False):
-    # Function exists to prevent side-effects after moncky patching with import
+    # Function exists to prevent side-effects after monckey patching with import
     import agateexcel  # noqa
     if xlsx:
         return agate.Table.from_xlsx(filepath, column_types=agate_tester())
