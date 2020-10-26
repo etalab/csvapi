@@ -1,5 +1,9 @@
 # Changelog
 
+## Current (in progress)
+
+- Nothing yet
+
 ## 1.0.4 (2020-10-26)
 
 - Protect custom type testers against None values [#66](https://github.com/etalab/csvapi/pull/66)
