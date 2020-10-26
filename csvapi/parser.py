@@ -10,9 +10,9 @@ from csvapi.type_tester import agate_tester
 SNIFF_LIMIT = 4096
 
 
-def is_binary(filepath):
-    with os.popen('file {} -b --mime-type'.format(filepath)) as proc:
-        return 'text/plain' not in proc.read().lower()
+def detect_type(filepath):
+    with os.popen(f'file {filepath} -b --mime-type') as proc:
+        return proc.read().lower()
 
 
 def detect_encoding(filepath):
@@ -28,8 +28,11 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
         return agate.Table.from_csv(filepath, encoding=encoding, column_types=agate_tester())
 
 
-def from_excel(filepath):
+def from_excel(filepath, xlsx=False):
+    # Function exists to prevent side-effects after monckey patching with import
     import agateexcel  # noqa
+    if xlsx:
+        return agate.Table.from_xlsx(filepath, column_types=agate_tester())
     return agate.Table.from_xls(filepath, column_types=agate_tester())
 
 
@@ -39,9 +42,14 @@ def to_sql(table, urlhash, storage):
 
 
 def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT):
-    if is_binary(filepath):
+    file_type = detect_type(filepath)
+    if 'application/vnd.ms-excel' in file_type:
         table = from_excel(filepath)
-    else:
+    elif 'application/vnd.openxml' in file_type:
+        table = from_excel(filepath, xlsx=True)
+    elif 'text/plain' in file_type:
         encoding = detect_encoding(filepath) if not encoding else encoding
         table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit)
+    else:
+        raise Exception(f'Unsupported file type {file_type}')
     return to_sql(table, urlhash, storage)
