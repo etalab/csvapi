@@ -23,6 +23,8 @@ class ParseView(MethodView):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
+                    if resp.status == 404:
+                        raise APIError('Unavailable file')
                     while True:
                         chunk = await resp.content.read(chunk_size)
                         if chunk_count * chunk_size > max_file_size:
