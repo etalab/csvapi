@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 1.0.5 (2020-11-17)
 
 - Parsing view now raises exception on http error response codes [#69](https://github.com/etalab/csvapi/pull/69)
 
