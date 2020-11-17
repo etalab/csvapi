@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Parsing view now raises exception on http error response codes [#69](https://github.com/etalab/csvapi/pull/69)
 
 ## 1.0.4 (2020-10-26)
 
