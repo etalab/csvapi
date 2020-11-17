@@ -130,6 +130,15 @@ async def test_apify(rmock, csv, client):
     assert db_path.exists()
 
 
+async def test_apify_not_found(rmock, csv, client):
+    rmock.get(MOCK_CSV_URL, status=404)
+    res = await client.get(f"/apify?url={MOCK_CSV_URL}")
+    assert res.status_code == 500
+    jsonres = await res.json
+    assert not jsonres['ok']
+    assert jsonres['error'] == "Error parsing CSV: 404, message='Not Found'"
+
+
 async def test_apify_w_cache(app, rmock, csv, client):
     app.config.update({'CSV_CACHE_ENABLED': True})
     rmock.get(MOCK_CSV_URL, body=csv.encode('utf-8'))
