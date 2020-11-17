@@ -21,7 +21,7 @@ class ParseView(MethodView):
         chunk_count = 0
         chunk_size = 1024
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(raise_for_status=True) as session:
                 async with session.get(url) as resp:
                     while True:
                         chunk = await resp.content.read(chunk_size)
