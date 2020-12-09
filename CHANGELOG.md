@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Better parsing fallback [#71](https://github.com/etalab/csvapi/pull/71)
 
 ## 1.0.5 (2020-11-17)
 
