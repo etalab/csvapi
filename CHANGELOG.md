@@ -1,5 +1,9 @@
 # Changelog
 
+## Current (in progress)
+
+- Nothing yet
+
 ## 1.0.6 (2020-12-14)
 
 - Better parsing fallback [#71](https://github.com/etalab/csvapi/pull/71)
