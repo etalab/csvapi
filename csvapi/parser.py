@@ -21,11 +21,22 @@ def detect_encoding(filepath):
 
 
 def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
-    """Try first w/ sniffing and then w/o sniffing if it fails"""
+    """Try first w/ sniffing and then w/o sniffing if it fails,
+    and then again by forcing ';' delimiter w/o sniffing"""
+    kwargs = {
+        'sniff_limit': sniff_limit,
+        'encoding': encoding,
+        'column_types': agate_tester()
+    }
     try:
-        return agate.Table.from_csv(filepath, sniff_limit=sniff_limit, encoding=encoding, column_types=agate_tester())
+        return agate.Table.from_csv(filepath, **kwargs)
     except ValueError:
-        return agate.Table.from_csv(filepath, encoding=encoding, column_types=agate_tester())
+        try:
+            kwargs.pop('sniff_limit')
+            return agate.Table.from_csv(filepath, **kwargs)
+        except ValueError:
+            kwargs['delimiter'] = ';'
+            return agate.Table.from_csv(filepath, **kwargs)
 
 
 def from_excel(filepath, xlsx=False):
