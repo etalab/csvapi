@@ -8,6 +8,7 @@ from csvapi.utils import get_db_info
 from csvapi.type_tester import agate_tester
 
 SNIFF_LIMIT = 4096
+CSV_FILETYPES = ('text/plain', 'application/csv')
 
 
 def detect_type(filepath):
@@ -58,7 +59,7 @@ def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT):
         table = from_excel(filepath)
     elif 'application/vnd.openxml' in file_type:
         table = from_excel(filepath, xlsx=True)
-    elif 'text/plain' in file_type:
+    elif any([supported in file_type for supported in CSV_FILETYPES]):
         encoding = detect_encoding(filepath) if not encoding else encoding
         table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit)
     else:
