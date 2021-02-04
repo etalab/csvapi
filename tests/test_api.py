@@ -136,7 +136,7 @@ async def test_apify_not_found(rmock, csv, client):
     assert res.status_code == 500
     jsonres = await res.json
     assert not jsonres['ok']
-    assert jsonres['error'] == "Error parsing CSV: 404, message='Not Found'"
+    assert jsonres['error'].startswith("Error parsing CSV: 404, message='Not Found'")
 
 
 async def test_apify_w_cache(app, rmock, csv, client):
