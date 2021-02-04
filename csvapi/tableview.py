@@ -1,7 +1,7 @@
 import asyncio
+import aiosqlite
 import sqlite3
 import time
-import threading
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -12,8 +12,6 @@ from quart.views import MethodView
 
 from csvapi.errors import APIError
 from csvapi.utils import get_db_info, get_executor
-
-connections = threading.local()
 
 ROWS_LIMIT = 100
 SQL_TIME_LIMIT_MS = 1000
@@ -49,32 +47,19 @@ class TableView(MethodView):
 
     async def execute(self, sql, db_info, params=None):
         """Executes sql against db_name in a thread"""
-        def sql_operation_in_thread(logger):
-            conn = getattr(connections, db_info['db_name'], None)
-            if not conn:
-                conn = sqlite3.connect(
-                    'file:{}?immutable=1'.format(db_info['db_path']),
-                    uri=True,
-                    check_same_thread=False,
-                )
-                prepare_connection(conn)
-                setattr(connections, db_info['db_name'], conn)
-
+        dsn = 'file:{}?immutable=1'.format(db_info['db_path'])
+        async with aiosqlite.connect(dsn) as conn:
+            conn.text_factory = lambda x: str(x, 'utf-8', 'replace')
             with sqlite_timelimit(conn, SQL_TIME_LIMIT_MS):
                 try:
-                    cursor = conn.cursor()
-                    cursor.execute(sql, params or {})
-                    rows = cursor.fetchall()
+                    async with conn.execute(sql, params or {}) as cursor:
+                        rows = await cursor.fetchall()
                 except Exception:
-                    logger.error('ERROR: conn={}, sql = {}, params = {}'.format(
+                    app.logger.error('ERROR: conn={}, sql = {}, params = {}'.format(
                         conn, repr(sql), params
                     ))
                     raise
             return rows, cursor.description
-
-        return await asyncio.get_event_loop().run_in_executor(
-            get_executor(), sql_operation_in_thread, app.logger
-        )
 
     def add_filters_to_sql(self, sql, filters):
         wheres = []
@@ -140,7 +125,7 @@ class TableView(MethodView):
         if total:
             sql = f"SELECT COUNT(*) FROM [{db_info['table_name']}]"
             sql, params = self.add_filters_to_sql(sql, filters)
-            r, d = await self.execute(sql, db_info, params=params)
+            r, _ = await self.execute(sql, db_info, params=params)
             res['total'] = r[0][0]
 
         return res
