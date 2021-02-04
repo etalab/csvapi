@@ -20,15 +20,6 @@ def get_db_info(urlhash, storage=None):
     }
 
 
-def get_executor():
-    global executor
-    if not executor:
-        app.logger.debug('* Creating executor')
-        max_workers = app.config.get('MAX_WORKERS')
-        executor = futures.ThreadPoolExecutor(max_workers=max_workers)
-    return executor
-
-
 def get_hash(to_hash):
     return get_hash_bytes(to_hash.encode('utf-8'))
 
