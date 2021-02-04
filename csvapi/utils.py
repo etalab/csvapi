@@ -1,6 +1,5 @@
 import hashlib
 
-from concurrent import futures
 from pathlib import Path
 
 from quart import current_app as app
