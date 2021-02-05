@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Use aiosqlite [#76](https://github.com/etalab/csvapi/pull/76)
 
 ## 1.0.6 (2020-12-14)
 

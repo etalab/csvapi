@@ -4,12 +4,12 @@ import time
 
 
 URLS_APIFY = [
-    'http://localhost:8003/apify?url=http://datanova.legroupe.laposte.fr/explore/dataset/laposte_poincont2/download/?format=csv&timezone=Europe/Berlin&use_labels_for_header=true',
-    'http://localhost:8003/apify?url=https://datanova.legroupe.laposte.fr/explore/dataset/laposte_hexasmal/download/?format=csv&timezone=Europe/Berlin&use_labels_for_header=true',
-    'http://localhost:8003/apify?url=https://people.sc.fsu.edu/~jburkardt/data/csv/snakes_count_10.csv',
-    'http://localhost:8003/apify?url=https://people.sc.fsu.edu/~jburkardt/data/csv/snakes_count_100.csv',
-    'http://localhost:8003/apify?url=https://people.sc.fsu.edu/~jburkardt/data/csv/snakes_count_1000.csv',
-    'http://localhost:8003/apify?url=https://people.sc.fsu.edu/~jburkardt/data/csv/snakes_count_10000.csv'
+    'http://localhost:8001/apify?url=http://datanova.legroupe.laposte.fr/explore/dataset/laposte_poincont2/download/?format=csv&timezone=Europe/Berlin&use_labels_for_header=true',
+    'http://localhost:8001/apify?url=https://datanova.legroupe.laposte.fr/explore/dataset/laposte_hexasmal/download/?format=csv&timezone=Europe/Berlin&use_labels_for_header=true',
+    'http://localhost:8001/apify?url=https://people.sc.fsu.edu/~jburkardt/data/csv/snakes_count_10.csv',
+    'http://localhost:8001/apify?url=https://people.sc.fsu.edu/~jburkardt/data/csv/snakes_count_100.csv',
+    'http://localhost:8001/apify?url=https://people.sc.fsu.edu/~jburkardt/data/csv/snakes_count_1000.csv',
+    'http://localhost:8001/apify?url=https://people.sc.fsu.edu/~jburkardt/data/csv/snakes_count_10000.csv'
 ]
 
 
