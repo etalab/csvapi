@@ -3,6 +3,7 @@ import os
 import agate
 import agatesql  # noqa
 import cchardet as chardet
+from clevercsv.wrappers import detect_dialect, read_dicts
 
 from csvapi.utils import get_db_info
 from csvapi.type_tester import agate_tester
@@ -24,11 +25,18 @@ def detect_encoding(filepath):
 def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
     """Try first w/ sniffing and then w/o sniffing if it fails,
     and then again by forcing ';' delimiter w/o sniffing"""
+    detected = detect_dialect(filepath, encoding=encoding, num_chars=SNIFF_LIMIT)
+    dialect = detected.to_dict() if detected else {}
+    dialect['quotechar'] = dialect['quotechar'] if dialect['quotechar'] else '"'
     kwargs = {
-        'sniff_limit': sniff_limit,
+        # hack to let us pass a custom dialect
+        'sniff_limit': -1,
+        # 'sniff_limit': SNIFF_LIMIT,
         'encoding': encoding,
-        'column_types': agate_tester()
+        'column_types': agate_tester(),
+        **dialect,
     }
+    print(dialect)
     try:
         return agate.Table.from_csv(filepath, **kwargs)
     except ValueError:

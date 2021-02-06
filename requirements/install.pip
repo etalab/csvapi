@@ -11,3 +11,4 @@ raven==6.10.0
 cchardet==2.1.7
 python-stdnum==1.15
 aiosqlite==0.16.1
+clevercsv
