@@ -3,5 +3,4 @@ dbs/*.db
 *.pyc
 build/
 dist/
-reports/
 .pytest_cache/

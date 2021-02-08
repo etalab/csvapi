@@ -4,7 +4,7 @@ import agate
 import agatesql  # noqa
 import cchardet as chardet
 import clevercsv
-from clevercsv.wrappers import detect_dialect, read_dicts, stream_dicts
+from clevercsv.wrappers import stream_dicts
 
 from csvapi.utils import get_db_info
 from csvapi.type_tester import agate_tester
@@ -26,31 +26,24 @@ def detect_encoding(filepath):
 def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
     """Try first w/ sniffing and then w/o sniffing if it fails,
     and then again by forcing ';' delimiter w/o sniffing"""
-
-    data = read_dicts(filepath, encoding=encoding, num_chars=SNIFF_LIMIT)
-    return agate.Table.from_object(data, column_types= agate_tester())
-
-    detected = detect_dialect(filepath, encoding=encoding, num_chars=SNIFF_LIMIT)
-    dialect = detected.to_dict() if detected else {}
-    dialect['quotechar'] = dialect['quotechar'] if dialect['quotechar'] else '"'
     kwargs = {
-        # hack to let us pass a custom dialect
-        'sniff_limit': -1,
-        # 'sniff_limit': SNIFF_LIMIT,
+        'sniff_limit': SNIFF_LIMIT,
         'encoding': encoding,
         'column_types': agate_tester(),
-        **dialect,
     }
-    print(dialect)
     try:
         return agate.Table.from_csv(filepath, **kwargs)
-    except ValueError:
+    except (ValueError, agate.exceptions.FieldSizeLimitError):
         try:
             kwargs.pop('sniff_limit')
             return agate.Table.from_csv(filepath, **kwargs)
-        except ValueError:
+        except (ValueError, agate.exceptions.FieldSizeLimitError):
             kwargs['delimiter'] = ';'
-            return agate.Table.from_csv(filepath, **kwargs)
+            try:
+                return agate.Table.from_csv(filepath, **kwargs)
+            except (ValueError, agate.exceptions.FieldSizeLimitError):
+                data = stream_dicts(filepath, encoding=encoding, num_chars=SNIFF_LIMIT)
+                return agate.Table.from_object(data, column_types=agate_tester())
 
 
 def from_excel(filepath, xlsx=False):

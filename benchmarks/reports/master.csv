@@ -1,0 +1,8 @@
+filepath,error
+/Users/alexandre/Developer/Etalab/decapode/data/downloaded/5f97e15576be08d1b7d5f959_91f19617-5816-49cf-8aff-ae1b265477bc.csv,"CSV contains fields longer than maximum length of 131072 characters. Try raising the maximum with the field_size_limit parameter, or try setting quoting=csv.QUOTE_NONE."
+/Users/alexandre/Developer/Etalab/decapode/data/downloaded/59606840a3a7296407d6a7e1_318a8588-793f-4c53-8727-ec287dd16772.csv,"CSV contains fields longer than maximum length of 131072 characters. Try raising the maximum with the field_size_limit parameter, or try setting quoting=csv.QUOTE_NONE."
+/Users/alexandre/Developer/Etalab/decapode/data/downloaded/5c89c8069ce2e727e7e27c1e_7851df93-25f7-4ee5-beee-322704835f1a.csv,'utf-8' codec can't decode byte 0xc2 in position 9404: invalid continuation byte
+/Users/alexandre/Developer/Etalab/decapode/data/downloaded/557bc894c751df60c11d4bfc_88c62320-6620-4d4b-ae5b-246f69903943.csv,"Row 1 has 5 values, but Table only has 3 columns."
+/Users/alexandre/Developer/Etalab/decapode/data/downloaded/5f97e15508d8596c21d5f95a_98d94125-437d-4a99-a652-d34e1517d937.csv,"CSV contains fields longer than maximum length of 131072 characters. Try raising the maximum with the field_size_limit parameter, or try setting quoting=csv.QUOTE_NONE."
+/Users/alexandre/Developer/Etalab/decapode/data/downloaded/596067e4a3a7296407d6a7d6_96ded371-4d74-4b64-92ae-6cc31fe37643.csv,"Row 146 has 2 values, but Table only has 1 columns."
+/Users/alexandre/Developer/Etalab/decapode/data/downloaded/5ae2d5b5c751df3498bc70ad_f89d8ec7-0f4a-4e20-b34c-fff655b4667f.csv,"Row 0 has 9 values, but Table only has 6 columns."

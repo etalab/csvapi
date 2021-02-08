@@ -1,0 +1,3 @@
+filepath,error
+/Users/alexandre/Developer/Etalab/decapode/data/downloaded/59606840a3a7296407d6a7e1_318a8588-793f-4c53-8727-ec287dd16772.csv,field larger than field limit (131072)
+/Users/alexandre/Developer/Etalab/decapode/data/downloaded/5c89c8069ce2e727e7e27c1e_7851df93-25f7-4ee5-beee-322704835f1a.csv,'utf-8' codec can't decode byte 0xc2 in position 1212: invalid continuation byte

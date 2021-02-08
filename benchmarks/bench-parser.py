@@ -36,7 +36,7 @@ def run(filename):
                     warning += 1
         except Exception as e:
             print('-----', filepath)
-            print("ERROR", e)
+            print("ERROR", type(e), e)
             errors.append({
                 "filepath": filepath,
                 "error": e.__str__()
