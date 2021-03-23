@@ -1,5 +1,9 @@
 # Changelog
 
+## Current (in progress)
+
+- Nothing yet
+
 ## 1.1.0 (2021-03-23)
 
 - Use aiosqlite [#76](https://github.com/etalab/csvapi/pull/76)
