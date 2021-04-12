@@ -1,4 +1,5 @@
 dbs/*.db
+profiles/*.html
 *.egg-info/
 *.pyc
 build/

@@ -1,4 +1,5 @@
 DB_ROOT_DIR = './dbs'
+PROFILES_ROOT_DIR = './profiles'
 CSV_CACHE_ENABLED = True
 MAX_WORKERS = 3
 DEBUG = True
@@ -13,3 +14,4 @@ MAX_FILE_SIZE = 1024 * 1024 * 100
 # It will also match subdomains
 # e.g. REFERRERS_FILTER = ['data.gouv.fr'] will match 'demo.data.gouv.fr'
 REFERRERS_FILTER = None
+PANDAS_PROFILING_CONFIG_MIN = False
