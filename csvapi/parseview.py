@@ -69,5 +69,6 @@ class ParseView(MethodView):
         scheme = 'https' if app.config.get('FORCE_SSL') else request.scheme
         return jsonify({
             'ok': True,
-            'endpoint': f"{scheme}://{request.host}/api/{urlhash}"
+            'endpoint': f"{scheme}://{request.host}/api/{urlhash}",
+            'profile_endpoint': f"{scheme}://{request.host}/profile/{urlhash}",
         })
