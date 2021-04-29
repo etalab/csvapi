@@ -1,5 +1,9 @@
 # Changelog
 
+## Current (in progress)
+
+- Nothing yet
+
 ## 1.2.1 (2021-04-29)
 
 - Upgrade raven to sentry-sdk (a bit dirty so far)

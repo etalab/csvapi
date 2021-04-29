@@ -59,7 +59,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Opendata Team',
     author_email='opendatateam@data.gouv.fr',
-    version='1.2.1',
+    version='1.2.2.dev',
     license='MIT',
     url='https://github.com/opendatateam/csvapi',
     packages=find_packages(),
