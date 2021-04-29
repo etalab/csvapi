@@ -5,9 +5,9 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-
 from quart import request, jsonify, current_app as app
 from quart.views import MethodView
+from slugify import slugify
 
 from csvapi.errors import APIError
 from csvapi.utils import get_db_info
@@ -69,12 +69,13 @@ class TableView(MethodView):
         for (f_key, f_value) in filters:
             comparator = f_key.split('__')[1]
             column = f_key.split('__')[0]
+            normalized_column = slugify(column, separator='_')
             if comparator == 'exact':
-                wheres.append(f"[{column}] = :filter_value_{column}")
-                params[f'filter_value_{column}'] = f_value
+                wheres.append(f"[{column}] = :filter_value_{normalized_column}")
+                params[f'filter_value_{normalized_column}'] = f_value
             elif comparator == 'contains':
-                wheres.append(f"[{column}] LIKE :filter_value_{column}")
-                params[f'filter_value_{column}'] = f'%{f_value}%'
+                wheres.append(f"[{column}] LIKE :filter_value_{normalized_column}")
+                params[f'filter_value_{normalized_column}'] = f'%{f_value}%'
             else:
                 app.logger.warning(f'Dropped unknown comparator in {f_key}')
         if wheres:

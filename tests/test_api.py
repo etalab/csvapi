@@ -66,10 +66,14 @@ c<sep>09:45
 
 @pytest.fixture
 def csv_filters():
-    return '''id,hour,value
-first,12:30,1
-second,9:15,2
-third,09:45,3
+    """
+    TODO: also test with unicode value in column name, but Quart
+    test client currently fails
+    """
+    return '''id,hour,value,another column
+first,12:30,1,value
+second,9:15,2,value
+third,09:45,3,value
 '''
 
 
@@ -405,7 +409,7 @@ async def test_api_filters_exact_hour(rmock, uploaded_csv_filters, client):
     jsonres = await res.json
     assert jsonres['total'] == 1
     assert jsonres['rows'] == [
-        [1, 'first', '12:30', 1.0],
+        [1, 'first', '12:30', 1.0, 'value'],
     ]
 
 
@@ -415,7 +419,7 @@ async def test_api_filters_contains_string(rmock, uploaded_csv_filters, client):
     jsonres = await res.json
     assert jsonres['total'] == 1
     assert jsonres['rows'] == [
-        [1, 'first', '12:30', 1.0],
+        [1, 'first', '12:30', 1.0, 'value'],
     ]
 
 
@@ -426,7 +430,7 @@ async def test_api_filters_contains_exact_int(rmock, uploaded_csv_filters, clien
     jsonres = await res.json
     assert jsonres['total'] == 1
     assert jsonres['rows'] == [
-        [1, 'first', '12:30', 1.0],
+        [1, 'first', '12:30', 1.0, 'value'],
     ]
 
 
@@ -436,7 +440,7 @@ async def test_api_filters_contains_exact_float(rmock, uploaded_csv_filters, cli
     jsonres = await res.json
     assert jsonres['total'] == 1
     assert jsonres['rows'] == [
-        [1, 'first', '12:30', 1.0],
+        [1, 'first', '12:30', 1.0, 'value'],
     ]
 
 
@@ -446,5 +450,15 @@ async def test_api_and_filters(rmock, uploaded_csv_filters, client):
     jsonres = await res.json
     assert jsonres['total'] == 1
     assert jsonres['rows'] == [
-        [1, 'first', '12:30', 1.0],
+        [1, 'first', '12:30', 1.0, 'value'],
+    ]
+
+
+async def test_api_filters_unnormalized_column(rmock, uploaded_csv_filters, client):
+    res = await client.get(f"/api/{MOCK_CSV_HASH_FILTERS}?id__contains=fir&another column__contains=value")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['total'] == 1
+    assert jsonres['rows'] == [
+        [1, 'first', '12:30', 1.0, 'value'],
     ]
