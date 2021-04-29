@@ -27,15 +27,19 @@ app.before_request(filter_referrers)
 conffile = os.environ.get('CSVAPI_CONFIG_FILE') or '../config.py'
 app.config.from_pyfile(conffile)
 
-if app.config.get('SENTRY_DSN'):
-    from raven import Client
-    app.extensions['sentry'] = Client(app.config['SENTRY_DSN'])
 
-
-def handle_and_print_error():
+def handle_and_print_error(error):
     sentry_id = None
-    if app.extensions.get('sentry'):
-        sentry_id = app.extensions['sentry'].captureException()
+    if app.config.get('SENTRY_DSN'):
+        import sentry_sdk
+        with sentry_sdk.push_scope() as scope:
+            sentry_sdk.init(
+                app.config['SENTRY_DSN'],
+                traces_sample_rate=1.0
+            )
+            scope.set_extra('debug', False)
+            from sentry_sdk import capture_exception
+            sentry_id = capture_exception(error)
     traceback.print_exc()
     return sentry_id
 
@@ -52,7 +56,7 @@ def handle_not_found(error):
 
 @app.errorhandler(APIError)
 def handle_api_error(error):
-    error_id = handle_and_print_error()
+    error_id = handle_and_print_error(error)
     app.logger.error(error.message)
     data = error.to_dict()
     data['error_id'] = error_id
@@ -64,6 +68,6 @@ def handle_api_error(error):
 @app.errorhandler(Exception)
 def handle_exceptions(error):
     """Serialize all errors to API"""
-    error_id = handle_and_print_error()
+    error_id = handle_and_print_error(error)
     response = jsonify(error=str(error), error_id=error_id, ok=False)
     return response, 500

@@ -2,7 +2,7 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Upgrade raven to sentry-sdk (a bit dirty so far)
 
 ## 1.2.0 (2021-04-29)
 

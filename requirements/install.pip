@@ -7,7 +7,7 @@ validators==0.18.2
 agate-excel==0.2.3
 Quart==0.14.1
 quart-cors==0.3.0
-raven==6.10.0
+sentry-sdk==1.0.0
 cchardet==2.1.7
 python-stdnum==1.15
 aiosqlite==0.16.1
