@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 1.2.0 (2021-04-29)
 
 - Add profiling support [#77](https://github.com/etalab/csvapi/pull/77)
 - Fix bug in filters w/ blanks in column names [#77](https://github.com/etalab/csvapi/pull/77)
