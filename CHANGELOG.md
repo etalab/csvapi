@@ -1,5 +1,9 @@
 # Changelog
 
+## Current (in progress)
+
+- Nothing yet
+
 ## 1.2.0 (2021-04-29)
 
 - Add profiling support [#77](https://github.com/etalab/csvapi/pull/77)
