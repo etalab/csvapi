@@ -15,3 +15,6 @@ MAX_FILE_SIZE = 1024 * 1024 * 100
 # e.g. REFERRERS_FILTER = ['data.gouv.fr'] will match 'demo.data.gouv.fr'
 REFERRERS_FILTER = None
 PANDAS_PROFILING_CONFIG_MIN = False
+MINIO_URL= 'http://localhost:9000'
+MINIO_USER = 'geoffrey'
+MINIO_PASSWORD = 'geoffrey'
