@@ -17,6 +17,7 @@ from sqlalchemy.types import VARCHAR
 from stdnum.fr.siren import is_valid as is_valid_siren
 from stdnum.fr.siret import is_valid as is_valid_siret
 
+from csvapi.setup_logger import logger
 
 class Time(DataType):
     # Detect an hour minute string.
@@ -72,3 +73,45 @@ def agate_tester():
             Text(),
         ]
     )
+
+def convert_types(column_types):
+    convert_dict = {
+        'string': Text(),
+        'int': Number(),
+        'float': Number(),
+        'number': Number(),
+        'date': Date(),
+        'bool': Boolean(),
+        'geopoint': Text(),
+        'geojson': Text(),
+        'any': Text(),
+        'year': Text(),
+        'datetime': DateTime(),
+        'time': Time()
+    }
+    agate_types = []
+    for ct in column_types:
+        agate_types.append(convert_dict[ct])
+    
+    return agate_types
+
+def convert_python_types(columns):
+    convert_dict = {
+        'string': str,
+        'int': int,
+        'float': float,
+        'number': float,
+        'date': str,
+        'bool': bool,
+        'geopoint': str,
+        'geojson': str,
+        'any': str,
+        'year': str,
+        'datetime': str,
+        'time': str
+    }
+    python_types = {}
+    for col in columns:
+        python_types[col] = convert_dict[columns[col]['python_type']]
+    
+    return python_types

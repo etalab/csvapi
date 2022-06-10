@@ -2,6 +2,7 @@ import os
 import tempfile
 
 import aiohttp
+from sqlalchemy import column
 import validators
 
 from quart import request, jsonify, current_app as app
@@ -11,11 +12,39 @@ from csvapi.errors import APIError
 from csvapi.parser import parse
 from csvapi.utils import already_exists, get_hash
 
+from csvapi.setup_logger import logger
+from csvapi.type_tester import convert_types
+import os
+from config import DB_ROOT_DIR, CSV_SNIFF_LIMIT, MAX_FILE_SIZE
+
 
 class ParseView(MethodView):
 
     @staticmethod
-    async def do_parse(url, urlhash, encoding, storage, logger, sniff_limit, max_file_size):
+    async def parse_from_consumer(self, url: str, urlhash: str, csv_detective_report: dict) -> None:
+        logger.info('Started')          
+        storage = DB_ROOT_DIR
+        
+        column_types = []
+        for col in csv_detective_report['columns']:
+            column_types.append(csv_detective_report['columns'][col]['python_type'])
+        agate_types = convert_types(column_types)
+
+        logger.info(column_types)
+        await self.do_parse(url=url,
+            urlhash=urlhash,
+            encoding=csv_detective_report['encoding'],
+            storage=storage,
+            logger=logger,
+            sniff_limit=CSV_SNIFF_LIMIT,
+            max_file_size=MAX_FILE_SIZE,
+            agate_types=agate_types
+        )
+        logger.info('Finished')
+
+
+    @staticmethod
+    async def do_parse(url, urlhash, encoding, storage, logger, sniff_limit, max_file_size, agate_types = None):
         logger.debug('* do_parse %s (%s)', urlhash, url)
         tmp = tempfile.NamedTemporaryFile(delete=False)
         chunk_count = 0
@@ -35,7 +64,7 @@ class ParseView(MethodView):
             tmp.close()
             logger.debug('* Downloaded %s', urlhash)
             logger.debug('* Parsing %s...', urlhash)
-            parse(tmp.name, urlhash, storage, encoding=encoding, sniff_limit=sniff_limit)
+            parse(tmp.name, urlhash, storage, encoding=encoding, sniff_limit=sniff_limit, agate_types=agate_types)
             logger.debug('* Parsed %s', urlhash)
         finally:
             logger.debug('Removing tmp file: %s', tmp.name)

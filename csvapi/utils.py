@@ -4,13 +4,22 @@ from pathlib import Path
 
 from quart import current_app as app
 
+from config import PROFILES_ROOT_DIR, DB_ROOT_DIR
+
+import sqlite3
+
 executor = None
 
 
 def get_db_info(urlhash, storage=None):
-    # app.config not thread safe, sometimes we need to pass storage directly
-    db_storage = storage or app.config['DB_ROOT_DIR']
-    profile_storage = app.config['PROFILES_ROOT_DIR']
+    if(app):
+        # app.config not thread safe, sometimes we need to pass storage directly
+        db_storage = storage or app.config['DB_ROOT_DIR']
+        profile_storage = app.config['PROFILES_ROOT_DIR']
+    else:
+        db_storage = DB_ROOT_DIR
+        profile_storage = PROFILES_ROOT_DIR
+
     db_path = f"{db_storage}/{urlhash}.db"
     profile_path = f"{profile_storage}/{urlhash}.html"
     return {
@@ -35,3 +44,9 @@ def already_exists(urlhash):
     if not cache_enabled:
         return False
     return Path(get_db_info(urlhash)['db_path']).exists()
+
+
+def create_connection(db_file):
+    conn = None
+    conn = sqlite3.connect(db_file)
+    return conn
