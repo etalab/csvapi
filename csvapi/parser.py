@@ -7,6 +7,8 @@ import cchardet as chardet
 from csvapi.utils import get_db_info
 from csvapi.type_tester import agate_tester
 
+from csvapi.setup_logger import logger
+
 
 SNIFF_LIMIT = 4096
 CSV_FILETYPES = ('text/plain', 'application/csv')
@@ -46,6 +48,17 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT, agate_types=No
         except ValueError:
             kwargs['delimiter'] = ';'
             return agate.Table.from_csv(filepath, **kwargs)
+    except agate.CastError:
+        try:
+            kwargs = {
+                'sniff_limit': sniff_limit,
+                'encoding': encoding,
+                'column_types': agate_tester()
+            }
+            return agate.Table.from_csv(filepath, **kwargs)
+        except:
+            logger.error('error casting')
+
 
 
 def from_excel(filepath, xlsx=False):

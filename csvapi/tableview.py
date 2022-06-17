@@ -216,7 +216,7 @@ class TableView(MethodView):
                 for col in columns[1:]:
                     res[row[0]][col] = row[cpt]
                     cpt = cpt + 1
-
+            
             res = await self.top_and_categorical_infos(db_info, res, 'top_infos')
             res = await self.top_and_categorical_infos(db_info, res, 'categorical_infos')
             res = await self.numeric_infos(db_info, res)

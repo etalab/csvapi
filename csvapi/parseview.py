@@ -22,15 +22,12 @@ class ParseView(MethodView):
 
     @staticmethod
     async def parse_from_consumer(self, url: str, urlhash: str, csv_detective_report: dict) -> None:
-        logger.info('Started')          
         storage = DB_ROOT_DIR
-        
         column_types = []
         for col in csv_detective_report['columns']:
             column_types.append(csv_detective_report['columns'][col]['python_type'])
         agate_types = convert_types(column_types)
 
-        logger.info(column_types)
         await self.do_parse(url=url,
             urlhash=urlhash,
             encoding=csv_detective_report['encoding'],
@@ -40,7 +37,6 @@ class ParseView(MethodView):
             max_file_size=MAX_FILE_SIZE,
             agate_types=agate_types
         )
-        logger.info('Finished')
 
 
     @staticmethod

@@ -23,8 +23,11 @@ class ProfileView(MethodView):
         dsn = 'file:{}?immutable=1'.format(db_info['db_path'])
         conn = sqlite3.connect(dsn)
         sql = 'SELECT * FROM [{}]'.format(db_info['table_name'])
-        logger.info(dtype)
-        df = pd.read_sql_query(sql, con=conn, dtype=dtype)
+        try:
+            df = pd.read_sql_query(sql, con=conn, dtype=dtype)
+        except:
+            df = pd.read_sql_query(sql, con=conn)
+            logger.info('problem with python types')
         return df
 
     def make_profile(self, db_info):
@@ -56,7 +59,6 @@ class ProfileView(MethodView):
 
     async def get_minimal_profile(self, url: str, urlhash: str, csv_detective_report: dict) -> None:
         db_info = get_db_info(urlhash)
-        logger.info(urlhash)
         p = Path(db_info['db_path'])
         if not p.exists():
             raise APIError('Database has probably been removed or does not exist yet.', status=404)
@@ -67,7 +69,6 @@ class ProfileView(MethodView):
             try:
 
                 python_types = convert_python_types(csv_detective_report['columns'])
-                logger.info(python_types)
                 df = self.get_dataframe(db_info, dtype=python_types)
                 profile = ProfileReport(df, minimal=True, vars=dict(num={"low_categorical_threshold": 0}), plot=dict(histogram={"bins": 10}))
                 profile_report = json.loads(profile.to_json())
