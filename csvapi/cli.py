@@ -61,7 +61,7 @@ def consume() -> None:
         kafka_uri=f'{os.environ.get("KAFKA_HOST", "localhost")}:{os.environ.get("KAFKA_PORT", "9092")}',
         group_id="csvapi",
         topics=os.environ.get(
-            "TOPICS", ["resource.analysed"]
+            "TOPICS", [os.environ.get("UDATA_INSTANCE_NAME", "udata")+".resource.analysed"]
         ),
         message_processing_func=run_process_message,
     )
