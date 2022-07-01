@@ -4,8 +4,13 @@ from csvapi.parseview import ParseView
 from csvapi.profileview import ProfileView
 from csvapi.setup_logger import logger
 import requests
+import os
 
-from config import MINIO_URL, MINIO_USER, MINIO_PASSWORD, DB_ROOT_DIR
+from config import DB_ROOT_DIR
+
+MINIO_URL = os.environ.get("MINIO_URL", "http://minio:9000")
+MINIO_USER = os.environ.get("MINIO_USER", "minio")
+MINIO_PASSWORD = os.environ.get("MINIO_PASSWORD", "password")
 
 from csvapi.utils import get_hash, create_connection
 
