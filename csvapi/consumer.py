@@ -8,7 +8,7 @@ import os
 
 from config import DB_ROOT_DIR
 
-MINIO_URL = os.environ.get("MINIO_URL", "http://minio:9000")
+MINIO_URL = os.environ.get("MINIO_URL", "http://localhost:9000")
 MINIO_USER = os.environ.get("MINIO_USER", "minio")
 MINIO_PASSWORD = os.environ.get("MINIO_PASSWORD", "password")
 
@@ -29,7 +29,7 @@ async def process_message(key: str, message: dict, topic: str) -> None:
     #r = requests.get('https://www.data.gouv.fr/api/1/datasets/{}/resources/{}'.format(message['meta']['dataset_id'], key))
     #url = r.json()['url']
     if((message is not None) & (message['service'] == 'csvdetective')):
-        try:
+        #try:
             url = 'https://www.data.gouv.fr/fr/datasets/r/{}'.format(key)
             urlhash = get_hash(url) 
             logger.info(urlhash)   
@@ -44,18 +44,18 @@ async def process_message(key: str, message: dict, topic: str) -> None:
             )
             
             try:
-                s3_client.head_bucket(Bucket=message['value']['bucket'])
+                s3_client.head_bucket(Bucket=message['value']['location']['bucket'])
             except ClientError as e:
                 logger.error(e)
                 logger.error(
                     "Bucket {} does not exist or credentials are invalid".format(
-                        message['value']['bucket']
+                        message['value']['location']['bucket']
                     )
                 )
                 return
             
             # Load csv-detective report
-            response = s3_client.get_object(Bucket = message['value']['bucket'], Key = message['value']['key'])
+            response = s3_client.get_object(Bucket = message['value']['location']['bucket'], Key = message['value']['location']['key'])
             content = response['Body']
             csv_detective_report = json.loads(content.read())
 
@@ -185,5 +185,5 @@ async def process_message(key: str, message: dict, topic: str) -> None:
 
             # Consolider detection de type pandas profiling
             # on dirait qu'il ne comprend pas le dtype à la lecture (notamment sur siren)
-        except:
-            logger.info('Error with message', message)
+        #except:
+        #    logger.info('Error with message', message)
