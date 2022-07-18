@@ -39,19 +39,19 @@ async def process_message(key: str, message: dict, topic: str) -> None:
                 )
                 
                 try:
-                    s3_client.head_bucket(Bucket=message['value']['location']['bucket'])
+                    s3_client.head_bucket(Bucket=message['value']['report_location']['bucket'])
                 except ClientError as e:
                     logger.error(e)
                     logger.error(
                         "Bucket {} does not exist or credentials are invalid".format(
-                            message['value']['location']['bucket']
+                            message['value']['report_location']['bucket']
                         )
                     )
                     return
                 
                 # Load csv-detective report
                 try:
-                    response = s3_client.get_object(Bucket = message['value']['location']['bucket'], Key = message['value']['location']['key'])
+                    response = s3_client.get_object(Bucket = message['value']['report_location']['bucket'], Key = message['value']['report_location']['key'])
                     content = response['Body']
                     csv_detective_report = json.loads(content.read())
                 except ClientError as e:

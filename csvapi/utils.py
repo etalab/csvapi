@@ -75,8 +75,8 @@ def keys_exists(element, *keys):
 def check_message_structure(message):
     if ((message is not None) & \
         (keys_exists(message, "service")) & \
-        (keys_exists(message, "value", "location", "bucket")) & \
-        (keys_exists(message, "value", "location", "key")) & \
+        (keys_exists(message, "value", "report_location", "bucket")) & \
+        (keys_exists(message, "value", "report_location", "key")) & \
         (keys_exists(message, "meta", "dataset_id"))
      ):
         return True
