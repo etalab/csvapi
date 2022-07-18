@@ -16,3 +16,4 @@ pandas-profiling==2.11.0
 requests==2.27.1
 udata-event-service==0.0.8
 boto3==1.21.21
+csv-detective==0.4.4
