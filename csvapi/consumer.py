@@ -55,7 +55,7 @@ async def process_message(key: str, message: dict, topic: str) -> None:
                 return
             
             # Load csv-detective report
-            response = s3_client.get_object(Bucket = message['value']['data_location']['bucket'], Key = message['value']['data_location']['key'])
+            response = s3_client.get_object(Bucket = message['value']['report_location']['bucket'], Key = message['value']['report_location']['key'])
             content = response['Body']
             csv_detective_report = json.loads(content.read())
 
