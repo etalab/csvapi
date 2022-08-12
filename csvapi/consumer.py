@@ -28,7 +28,7 @@ async def process_message(key: str, message: dict, topic: str) -> None:
     # Should think if we keep that
     #r = requests.get('https://www.data.gouv.fr/api/1/datasets/{}/resources/{}'.format(message['meta']['dataset_id'], key))
     #url = r.json()['url']
-    if((message is not None) & (message['service'] == 'csvdetective')):
+    if message is not None and message['service'] == 'csvdetective':
         #try:
             url = 'https://www.data.gouv.fr/fr/datasets/r/{}'.format(key)
             urlhash = get_hash(url) 
@@ -44,7 +44,7 @@ async def process_message(key: str, message: dict, topic: str) -> None:
             )
             
             try:
-                s3_client.head_bucket(Bucket=message['value']['location']['bucket'])
+                s3_client.head_bucket(Bucket=message['value']['data_location']['bucket'])
             except ClientError as e:
                 logger.error(e)
                 logger.error(
