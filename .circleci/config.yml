@@ -28,6 +28,9 @@ jobs:
           paths:
             - /home/circleci/.cache/pypoetry/virtualenvs
       - run:
+          name: Lint code
+          command: flake8 csvapi
+      - run:
           name: Run tests
           command: |
             poetry run pytest --junitxml=reports/python/tests.xml -p no:sugar --color=yes
