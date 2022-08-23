@@ -3,6 +3,7 @@ import uuid
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 from aioresponses import aioresponses
 
 from csvapi.utils import get_hash
@@ -105,7 +106,7 @@ def random_url():
     return f"https://example.com/{uuid.uuid4()}.csv"
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def uploaded_csv(rmock, csv, client):
     content = csv.replace('<sep>', ';').encode('utf-8')
     rmock.get(MOCK_CSV_URL, body=content)
@@ -235,7 +236,6 @@ async def test_api(client, rmock, csv, separator, encoding):
 
 
 async def test_api_limit(client, rmock, uploaded_csv):
-    await uploaded_csv
     res = await client.get(f"/api/{MOCK_CSV_HASH}?_size=1")
     assert res.status_code == 200
     jsonres = await res.json
