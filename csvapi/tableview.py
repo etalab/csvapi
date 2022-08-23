@@ -47,7 +47,9 @@ class TableView(MethodView):
     async def execute(self, sql, db_info, params=None):
         """Executes sql against db_name in a thread"""
         dsn = 'file:{}?immutable=1'.format(db_info['db_path'])
-        async with aiosqlite.connect(dsn) as conn:
+        # specify uri=True to make sure `file:xxx` is supported,
+        # however the backend sqlite is configured (eg default MacOS)
+        async with aiosqlite.connect(dsn, uri=True) as conn:
             conn.text_factory = lambda x: str(x, 'utf-8', 'replace')
             # this will raise
             #  {"details": "interrupted",
@@ -190,11 +192,11 @@ class TableView(MethodView):
             for col in columns:
                 res[col] = rows[0][cpt]
                 cpt = cpt + 1
-            
+
             return res
         else:
             return {}
-    
+
 
     async def columns_infos(self, db_info):
         params = {}
@@ -216,7 +218,7 @@ class TableView(MethodView):
                 for col in columns[1:]:
                     res[row[0]][col] = row[cpt]
                     cpt = cpt + 1
-            
+
             res = await self.top_and_categorical_infos(db_info, res, 'top_infos')
             res = await self.top_and_categorical_infos(db_info, res, 'categorical_infos')
             res = await self.numeric_infos(db_info, res)
@@ -236,7 +238,7 @@ class TableView(MethodView):
             rows, description = await self.execute(
                 sql, db_info, params=params
             )
-            
+
             for row in rows:
                 if(table_name not in res[row[0]]):
                     res[row[0]][table_name] = []
@@ -262,11 +264,11 @@ class TableView(MethodView):
             rows, description = await self.execute(
                 sql, db_info, params=params
             )
-            
+
             for row in rows:
                 if('numeric_infos' not in res[row[0]]):
                     res[row[0]]['numeric_infos'] = {}
-                
+
                 res[row[0]]['numeric_infos']['mean'] = row[1]
                 res[row[0]]['numeric_infos']['std'] = row[2]
                 res[row[0]]['numeric_infos']['min'] = row[3]
@@ -289,7 +291,7 @@ class TableView(MethodView):
             rows, description = await self.execute(
                 sql, db_info, params=params
             )
-            
+
             for row in rows:
                 if('numeric_plot_infos' not in res[row[0]]):
                     res[row[0]]['numeric_plot_infos'] = {}
@@ -307,4 +309,3 @@ class TableView(MethodView):
             for col in res:
                 res[col]['numeric_plot_infos'] = {}
             return res
-    
