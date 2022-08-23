@@ -2,105 +2,83 @@
 version: 2
 
 jobs:
-  python:
+  build:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.9
     steps:
       - checkout
-      - run:
-          name: Compute Python dependencies key
-          command: cat requirements/*.pip > python.deps
       - run:
           name: Get the base reference branch
           command: export BASE_BRANCH=$(base_branch)
       - restore_cache:
           keys:
-          - py-cache-v2-{{ checksum "python.deps" }}
-          - py-cache-v2-{{ .Branch }}
-          - py-cache-v2-{{ .Environment.BASE_BRANCH }}
+            - py-cache-{{ arch }}-{{ checksum "poetry.lock" }}
+            - py-cache-{{ arch }}-{{ .Branch }}
+            - py-cache-{{ arch }}-{{ .Environment.BASE_BRANCH }}
       - run:
           name: Install python dependencies
           command: |
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements/develop.pip || pip install -r requirements/develop.pip
+            poetry install
       - save_cache:
-          key: py-cache-v2-{{ checksum "python.deps" }}
+          key: py-cache-{{ arch }}-{{ checksum "poetry.lock" }}
           paths:
-          - venv
+            - /home/circleci/.cache/pypoetry/virtualenvs
       - save_cache:
-          key: py-cache-v2-{{ .Branch }}
+          key: py-cache-{{ arch }}-{{ .Branch }}
           paths:
-          - venv
+            - /home/circleci/.cache/pypoetry/virtualenvs
       - run:
           name: Run tests
           command: |
-            source venv/bin/activate
-            inv qa test --report
+            poetry run pytest --junitxml=reports/python/tests.xml -p no:sugar --color=yes
       - store_test_results:
           path: reports/python
-      - store_artifacts:
-          path: reports/
-          destination: reports
-
-      - persist_to_workspace:
-          root: .
-          paths:
-          - venv
-
-  dist:
-    docker:
-      - image: circleci/python:3.7
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
       - run:
           name: Build a distributable package
           command: |
-            source venv/bin/activate
-            if [[ $CIRCLE_TAG ]]; then inv dist; else inv dist -b $CIRCLE_BUILD_NUM; fi
+            # Build a wheel release
+            if [[ $CIRCLE_TAG ]]; then
+                # This is a tagged release, version has been handled upstream
+                poetry build
+            else
+                # Relies on a dev version like "1.2.1.dev" by default
+                poetry version $(poetry version -s)$CIRCLE_BUILD_NUM
+                poetry build
+            fi
       - store_artifacts:
           path: dist
       - persist_to_workspace:
           root: .
           paths:
-            - dist
+            - .
 
   publish:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.9
     steps:
       - attach_workspace:
           at: .
-      - run:
-          name: Install Twine
-          command: sudo pip install twine
       - deploy:
           name: Publish on PyPI
-          command: twine upload --username "${PYPI_USERNAME}" --password "${PYPI_PASSWORD}" dist/*.whl
+          command: |
+            poetry publish --username "${PYPI_USERNAME}" --password "${PYPI_PASSWORD}" --no-interaction
 
 workflows:
   version: 2
   build:
     jobs:
-      - python:
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-      - dist:
-          requires:
-            - python
+      - build:
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
       - publish:
           requires:
-            - dist
+            - build
           filters:
             branches:
               only:
-                - /v[0-9]+(\.[0-9]+)*/
+                - master
+                - /[0-9]+(\.[0-9]+)+/
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
           context: org-global

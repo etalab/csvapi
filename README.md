@@ -244,10 +244,6 @@ By adding `{column}__{comparator}={value}` to the query string, you can filter t
 
 You can add multiple filters, they will be joined with a `AND` at the SQL level.
 
-## Production deployment
-
-Some example [Ansible 2](https://www.ansible.com) roles are [available here](/ansible).
-
 ## Credits
 
 Inspired by the excellent [Datasette](https://github.com/simonw/datasette).
