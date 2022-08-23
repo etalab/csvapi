@@ -16,20 +16,19 @@ pip install csvapi
 For development:
 
 ```shell
-pip install -r requirements/develop.pip
-pip install -e .
+poetry install
 ```
 
 ## Quickstart
 
 ```shell
-csvapi serve -h 0.0.0.0 -p 8000
+poetry run csvapi serve -h 0.0.0.0 -p 8000
 ```
 
 ## Command line options
 
 ```shell
-$ csvapi serve --help
+$ poetry run csvapi serve --help
 Usage: csvapi serve [OPTIONS]
 
 Options:
