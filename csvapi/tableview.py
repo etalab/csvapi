@@ -181,7 +181,7 @@ class TableView(MethodView):
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM general_infos'
             rows, description = await self.execute(
                 sql, db_info, params=params
@@ -197,14 +197,13 @@ class TableView(MethodView):
         else:
             return {}
 
-
     async def columns_infos(self, db_info):
         params = {}
         sql = 'SELECT count(*) FROM sqlite_master WHERE type=\'table\' AND name=\'columns_infos\''
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM columns_infos'
             rows, description = await self.execute(
                 sql, db_info, params=params
@@ -233,14 +232,14 @@ class TableView(MethodView):
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM {}'.format(table_name)
             rows, description = await self.execute(
                 sql, db_info, params=params
             )
 
             for row in rows:
-                if(table_name not in res[row[0]]):
+                if table_name not in res[row[0]]:
                     res[row[0]][table_name] = []
                 inter = {}
                 inter['value'] = row[1]
@@ -259,14 +258,14 @@ class TableView(MethodView):
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM {}'.format('numeric_infos')
             rows, description = await self.execute(
                 sql, db_info, params=params
             )
 
             for row in rows:
-                if('numeric_infos' not in res[row[0]]):
+                if 'numeric_infos' not in res[row[0]]:
                     res[row[0]]['numeric_infos'] = {}
 
                 res[row[0]]['numeric_infos']['mean'] = row[1]
@@ -286,22 +285,22 @@ class TableView(MethodView):
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM {}'.format('numeric_plot_infos')
             rows, description = await self.execute(
                 sql, db_info, params=params
             )
 
             for row in rows:
-                if('numeric_plot_infos' not in res[row[0]]):
+                if 'numeric_plot_infos' not in res[row[0]]:
                     res[row[0]]['numeric_plot_infos'] = {}
-                if('counts' not in res[row[0]]['numeric_plot_infos']):
+                if 'counts' not in res[row[0]]['numeric_plot_infos']:
                     res[row[0]]['numeric_plot_infos']['counts'] = []
-                if('bin_edges' not in res[row[0]]['numeric_plot_infos']):
+                if 'bin_edges' not in res[row[0]]['numeric_plot_infos']:
                     res[row[0]]['numeric_plot_infos']['bin_edges'] = []
-                if(row[2] == 'counts'):
+                if row[2] == 'counts':
                     res[row[0]]['numeric_plot_infos']['counts'].append(row[1])
-                if(row[2] == 'bin_edges'):
+                if row[2] == 'bin_edges':
                     res[row[0]]['numeric_plot_infos']['bin_edges'].append(row[1])
 
             return res

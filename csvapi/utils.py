@@ -47,6 +47,4 @@ def already_exists(urlhash):
 
 
 def create_connection(db_file):
-    conn = None
-    conn = sqlite3.connect(db_file)
-    return conn
+    return sqlite3.connect(db_file, uri=True)

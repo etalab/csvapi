@@ -235,6 +235,7 @@ async def test_api(client, rmock, csv, separator, encoding):
 
 
 async def test_api_limit(client, rmock, uploaded_csv):
+    await uploaded_csv
     res = await client.get(f"/api/{MOCK_CSV_HASH}?_size=1")
     assert res.status_code == 200
     jsonres = await res.json
