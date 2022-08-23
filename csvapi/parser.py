@@ -11,7 +11,7 @@ from csvapi.setup_logger import logger
 
 
 SNIFF_LIMIT = 4096
-CSV_FILETYPES = ('text/plain', 'application/csv')
+CSV_FILETYPES = ('text/plain', 'application/csv', 'text/csv')
 
 
 def detect_type(filepath):

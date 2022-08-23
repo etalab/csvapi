@@ -397,7 +397,7 @@ async def test_real_xls_files(client, rmock, xls_path):
     assert len(jsonres['rows']) > 0
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def uploaded_csv_filters(rmock, csv_filters, client):
     content = csv_filters.encode('utf-8')
     rmock.get(MOCK_CSV_URL_FILTERS, body=content)
