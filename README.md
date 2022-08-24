@@ -6,7 +6,7 @@ This tool is used by [data.gouv.fr](https://www.data.gouv.fr) to show a preview 
 
 ## Installation
 
-Requires Python 3.7+ and a Unix OS with the `file` command available.
+Requires Python 3.9+ and a Unix OS with the `file` command available.
 
 ```shell
 python3 -m venv pyenv && . pyenv/bin/activate
