@@ -1,10 +1,21 @@
 ---
-version: 2
+version: 2.1
+
+parameters:
+  python-version:
+    type: string
+    default: "3.9"
+  python-module:
+    type: string
+    default: "csvapi"
+  publish-branch:
+    type: string
+    default: "master"
 
 jobs:
-  build:
+  install:
     docker:
-      - image: cimg/python:3.9
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
       - run:
@@ -18,24 +29,50 @@ jobs:
       - run:
           name: Install python dependencies
           command: |
+            poetry config virtualenvs.in-project true
             poetry install
       - save_cache:
           key: py-cache-{{ arch }}-{{ checksum "poetry.lock" }}
           paths:
-            - /home/circleci/.cache/pypoetry/virtualenvs
+            - .venv
       - save_cache:
           key: py-cache-{{ arch }}-{{ .Branch }}
           paths:
-            - /home/circleci/.cache/pypoetry/virtualenvs
+            - .venv
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  lint:
+    docker:
+      - image: cimg/python:<< pipeline.parameters.python-version >>
+    steps:
+      - attach_workspace:
+          at: .
       - run:
           name: Lint code
-          command: poetry run flake8 csvapi
+          command: poetry run flake8 << pipeline.parameters.python-module >>
+
+  tests:
+    docker:
+      - image: cimg/python:<< pipeline.parameters.python-version >>
+    steps:
+      - attach_workspace:
+          at: .
       - run:
           name: Run tests
           command: |
             poetry run pytest --junitxml=reports/python/tests.xml -p no:sugar --color=yes
       - store_test_results:
           path: reports/python
+
+  build:
+    docker:
+      - image: cimg/python:<< pipeline.parameters.python-version >>
+    steps:
+      - attach_workspace:
+          at: .
       - run:
           name: Build a distributable package
           command: |
@@ -57,7 +94,7 @@ jobs:
 
   publish:
     docker:
-      - image: cimg/python:3.9
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - attach_workspace:
           at: .
@@ -70,17 +107,26 @@ workflows:
   version: 2
   build:
     jobs:
+      - install
+      - lint:
+          requires:
+            - install
+      - tests:
+          requires:
+            - install
       - build:
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
+          requires:
+            - tests
+            - lint
       - publish:
           requires:
             - build
           filters:
             branches:
               only:
-                - master
+                # FIXME: remove when merging on master
+                - kafka-integration
+                - << pipeline.parameters.publish-branch >>
                 - /[0-9]+(\.[0-9]+)+/
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
