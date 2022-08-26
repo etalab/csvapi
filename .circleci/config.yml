@@ -11,6 +11,9 @@ parameters:
   publish-branch:
     type: string
     default: "master"
+  cache-prefix:
+    type: string
+    default: "py-cache-v1"
 
 jobs:
   install:
@@ -23,20 +26,20 @@ jobs:
           command: export BASE_BRANCH=$(base_branch)
       - restore_cache:
           keys:
-            - py-cache-v1-{{ arch }}-{{ checksum "poetry.lock" }}
-            - py-cache-v1-{{ arch }}-{{ .Branch }}
-            - py-cache-v1-{{ arch }}-{{ .Environment.BASE_BRANCH }}
+            - << pipeline.parameters.cache-prefix >>-{{ arch }}-{{ checksum "poetry.lock" }}
+            - << pipeline.parameters.cache-prefix >>-{{ arch }}-{{ .Branch }}
+            - << pipeline.parameters.cache-prefix >>-{{ arch }}-{{ .Environment.BASE_BRANCH }}
       - run:
           name: Install python dependencies
           command: |
             poetry config virtualenvs.in-project true
             poetry install
       - save_cache:
-          key: py-cache-v1-{{ arch }}-{{ checksum "poetry.lock" }}
+          key: << pipeline.parameters.cache-prefix >>-{{ arch }}-{{ checksum "poetry.lock" }}
           paths:
             - .venv
       - save_cache:
-          key: py-cache-v1-{{ arch }}-{{ .Branch }}
+          key: << pipeline.parameters.cache-prefix >>-{{ arch }}-{{ .Branch }}
           paths:
             - .venv
       - persist_to_workspace:
