@@ -1,8 +1,0 @@
-requirements:
-  - requirements/develop.pip:
-      update: False
-  - requirements/install.pip:
-      update: True
-      pin: True
-  - requirements/test.pip:
-      update: False

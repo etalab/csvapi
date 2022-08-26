@@ -1,4 +1,0 @@
----
-
-- name: restart hypercorn
-  systemd: name=hypercorn state=restarted daemon_reload={{hypercorn__systemd_service.changed}}

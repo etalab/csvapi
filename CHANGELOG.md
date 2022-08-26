@@ -2,7 +2,8 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- [BREAKING] Migrate to python >= 3.9
+- Migrate to poetry
 
 ## 1.2.1 (2021-04-29)
 

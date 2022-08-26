@@ -3,6 +3,7 @@ import uuid
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 from aioresponses import aioresponses
 
 from csvapi.utils import get_hash
@@ -105,7 +106,7 @@ def random_url():
     return f"https://example.com/{uuid.uuid4()}.csv"
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def uploaded_csv(rmock, csv, client):
     content = csv.replace('<sep>', ';').encode('utf-8')
     rmock.get(MOCK_CSV_URL, body=content)
@@ -396,7 +397,7 @@ async def test_real_xls_files(client, rmock, xls_path):
     assert len(jsonres['rows']) > 0
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def uploaded_csv_filters(rmock, csv_filters, client):
     content = csv_filters.encode('utf-8')
     rmock.get(MOCK_CSV_URL_FILTERS, body=content)

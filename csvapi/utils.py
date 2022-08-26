@@ -12,7 +12,7 @@ executor = None
 
 
 def get_db_info(urlhash, storage=None):
-    if(app):
+    if app:
         # app.config not thread safe, sometimes we need to pass storage directly
         db_storage = storage or app.config['DB_ROOT_DIR']
         profile_storage = app.config['PROFILES_ROOT_DIR']
@@ -47,6 +47,4 @@ def already_exists(urlhash):
 
 
 def create_connection(db_file):
-    conn = None
-    conn = sqlite3.connect(db_file)
-    return conn
+    return sqlite3.connect(db_file, uri=True)
