@@ -23,20 +23,20 @@ jobs:
           command: export BASE_BRANCH=$(base_branch)
       - restore_cache:
           keys:
-            - py-cache-{{ arch }}-{{ checksum "poetry.lock" }}
-            - py-cache-{{ arch }}-{{ .Branch }}
-            - py-cache-{{ arch }}-{{ .Environment.BASE_BRANCH }}
+            - py-cache-v1-{{ arch }}-{{ checksum "poetry.lock" }}
+            - py-cache-v1-{{ arch }}-{{ .Branch }}
+            - py-cache-v1-{{ arch }}-{{ .Environment.BASE_BRANCH }}
       - run:
           name: Install python dependencies
           command: |
             poetry config virtualenvs.in-project true
             poetry install
       - save_cache:
-          key: py-cache-{{ arch }}-{{ checksum "poetry.lock" }}
+          key: py-cache-v1-{{ arch }}-{{ checksum "poetry.lock" }}
           paths:
             - .venv
       - save_cache:
-          key: py-cache-{{ arch }}-{{ .Branch }}
+          key: py-cache-v1-{{ arch }}-{{ .Branch }}
           paths:
             - .venv
       - persist_to_workspace:
