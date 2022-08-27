@@ -166,14 +166,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "boto3"
-version = "1.24.60"
+version = "1.24.61"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.27.60,<1.28.0"
+botocore = ">=1.27.61,<1.28.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -182,7 +182,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.27.60"
+version = "1.27.61"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -436,6 +436,22 @@ pillow = "*"
 PyWavelets = "*"
 scipy = "*"
 six = "*"
+
+[[package]]
+name = "importlib-metadata"
+version = "4.12.0"
+description = "Read metadata from Python packages"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+zipp = ">=0.5"
+
+[package.extras]
+docs = ["jaraco.packaging (>=9)", "rst.linker (>=1.9)", "sphinx"]
+perf = ["ipython"]
+testing = ["flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)"]
 
 [[package]]
 name = "iniconfig"
@@ -934,35 +950,37 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "quart"
-version = "0.14.1"
+version = "0.18.0"
 description = "A Python ASGI web microframework with the same API as Flask"
 category = "main"
 optional = false
-python-versions = ">=3.7.0"
+python-versions = ">=3.7"
 
 [package.dependencies]
 aiofiles = "*"
 blinker = "*"
 click = "*"
-hypercorn = ">=0.7.0"
+hypercorn = ">=0.11.2"
+importlib_metadata = {version = "*", markers = "python_version < \"3.10\""}
 itsdangerous = "*"
 jinja2 = "*"
-toml = "*"
-werkzeug = ">=1.0.0"
+markupsafe = "*"
+werkzeug = ">=2.2.0"
 
 [package.extras]
+docs = ["pydata-sphinx-theme"]
 dotenv = ["python-dotenv"]
 
 [[package]]
 name = "quart-cors"
-version = "0.3.0"
+version = "0.5.0"
 description = "A Quart extension to provide Cross Origin Resource Sharing, access control, support."
 category = "main"
 optional = false
 python-versions = ">=3.7.0"
 
 [package.dependencies]
-Quart = ">=0.11.1"
+Quart = ">=0.15"
 
 [[package]]
 name = "requests"
@@ -1236,14 +1254,16 @@ type_image_path = ["imagehash", "pillow"]
 
 [[package]]
 name = "werkzeug"
-version = "1.0.1"
+version = "2.2.2"
 description = "The comprehensive WSGI web application library."
 category = "main"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = ">=3.7"
+
+[package.dependencies]
+MarkupSafe = ">=2.1.1"
 
 [package.extras]
-dev = ["coverage", "pallets-sphinx-themes", "pytest", "pytest-timeout", "sphinx", "sphinx-issues", "tox"]
 watchdog = ["watchdog"]
 
 [[package]]
@@ -1282,10 +1302,22 @@ python-versions = ">=3.7"
 idna = ">=2.0"
 multidict = ">=4.0"
 
+[[package]]
+name = "zipp"
+version = "3.8.1"
+description = "Backport of pathlib-compatible object wrapper for zip files"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+docs = ["jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx"]
+testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<4"
-content-hash = "7f9d46c3ab6707f9b0f13d9910efbab0564b70577e4777674741b695d91401a6"
+content-hash = "ebbe88e0f9c56ebb288083d0dccc1dc3c2fed4936ac590b9756d2c81fc2d250b"
 
 [metadata.files]
 agate = [
@@ -1410,12 +1442,12 @@ blinker = [
     {file = "blinker-1.5.tar.gz", hash = "sha256:923e5e2f69c155f2cc42dafbbd70e16e3fde24d2d4aa2ab72fbe386238892462"},
 ]
 boto3 = [
-    {file = "boto3-1.24.60-py3-none-any.whl", hash = "sha256:de7d5d66292c4f8e0000755117cec047adf1f0c78e192f7061ac1c54a2389968"},
-    {file = "boto3-1.24.60.tar.gz", hash = "sha256:9d2dab8abe90d4afaced79a10476642dc7b3755a2bdc1f871927f8d21af25777"},
+    {file = "boto3-1.24.61-py3-none-any.whl", hash = "sha256:ec1aa3f4c2b68da1a9c01e175086f5f6b1b8b67780fa569ab8875be5bb3fd5ae"},
+    {file = "boto3-1.24.61.tar.gz", hash = "sha256:b72496c7eaa45afbdfa48a7c648c3211342582d91c8c1b7330d09c18242132d1"},
 ]
 botocore = [
-    {file = "botocore-1.27.60-py3-none-any.whl", hash = "sha256:5063d504698f379289249c5c27d9395ec72f445f0ac2ec4e0ed00135e76e5cac"},
-    {file = "botocore-1.27.60.tar.gz", hash = "sha256:5f9ddf144c7fe025a877dd31c9225563172769e9597013f50a226248f05ff6a8"},
+    {file = "botocore-1.27.61-py3-none-any.whl", hash = "sha256:535c8e97ed28a38fd09dd8f4735195e761bbee54e4c6021f3a709a97b1287dd6"},
+    {file = "botocore-1.27.61.tar.gz", hash = "sha256:99012965e2409665c7d86706862c5a141e01e1c4d2c81cb9409a44200ee59631"},
 ]
 cchardet = [
     {file = "cchardet-2.1.7-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c6f70139aaf47ffb94d89db603af849b82efdf756f187cdd3e566e30976c519f"},
@@ -1688,6 +1720,10 @@ idna = [
 ]
 imagehash = [
     {file = "ImageHash-4.2.1.tar.gz", hash = "sha256:a4af957814bc9832d9241247ff03f76e778f890c18147900b4540af124e93011"},
+]
+importlib-metadata = [
+    {file = "importlib_metadata-4.12.0-py3-none-any.whl", hash = "sha256:7401a975809ea1fdc658c3aa4f78cc2195a0e019c5cbc4c06122884e9ae80c23"},
+    {file = "importlib_metadata-4.12.0.tar.gz", hash = "sha256:637245b8bab2b6502fcbc752cc4b7a6f6243bb02b31c5c26156ad103d3d45670"},
 ]
 iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
@@ -2258,12 +2294,12 @@ pyyaml = [
     {file = "PyYAML-6.0.tar.gz", hash = "sha256:68fb519c14306fec9720a2a5b45bc9f0c8d1b9c72adf45c37baedfcd949c35a2"},
 ]
 quart = [
-    {file = "Quart-0.14.1-py3-none-any.whl", hash = "sha256:7b13786e07541cc9ce1466fdc6a6ccd5f36eb39118edd25a42d617593cd17707"},
-    {file = "Quart-0.14.1.tar.gz", hash = "sha256:429c5b4ff27e1d2f9ca0aacc38f6aba0ff49b38b815448bf24b613d3de12ea02"},
+    {file = "Quart-0.18.0-py3-none-any.whl", hash = "sha256:5bef6711d25e379ce8a1ed3f7d3ec72eae4159d116e8d480d1cab59c8bb6f44d"},
+    {file = "Quart-0.18.0.tar.gz", hash = "sha256:0c2465ef5768890431650636f51fe2cc459de6cf4cf3363870ae2a1f3dba9eb1"},
 ]
 quart-cors = [
-    {file = "Quart-CORS-0.3.0.tar.gz", hash = "sha256:c08bdb326219b6c186d19ed6a97a7fd02de8fe36c7856af889494c69b525c53c"},
-    {file = "Quart_CORS-0.3.0-py3-none-any.whl", hash = "sha256:020a17d504264db86cada3c1335ef174af28b33f57cee321ddc46d69c33d5c8e"},
+    {file = "Quart-CORS-0.5.0.tar.gz", hash = "sha256:ea08d26aef918d59194fbf065cde9b6cae90dc5f21120dcd254d7d46190cd293"},
+    {file = "Quart_CORS-0.5.0-py3-none-any.whl", hash = "sha256:c2be932f20413a56b176527090229afe8f725a3ee029d45ea08a174cdc319823"},
 ]
 requests = [
     {file = "requests-2.28.1-py3-none-any.whl", hash = "sha256:8fefa2a1a1365bf5520aac41836fbee479da67864514bdb821f31ce07ce65349"},
@@ -2389,8 +2425,8 @@ visions = [
     {file = "visions-0.7.4.tar.gz", hash = "sha256:4f66c1da369cdbced5e1e2d2c43104caa8cfb9c694006cea1592e1673cfc1153"},
 ]
 werkzeug = [
-    {file = "Werkzeug-1.0.1-py2.py3-none-any.whl", hash = "sha256:2de2a5db0baeae7b2d2664949077c2ac63fbd16d98da0ff71837f7d1dea3fd43"},
-    {file = "Werkzeug-1.0.1.tar.gz", hash = "sha256:6c80b1e5ad3665290ea39320b91e1be1e0d5f60652b964a3070216de83d2e47c"},
+    {file = "Werkzeug-2.2.2-py3-none-any.whl", hash = "sha256:f979ab81f58d7318e064e99c4506445d60135ac5cd2e177a2de0089bfd4c9bd5"},
+    {file = "Werkzeug-2.2.2.tar.gz", hash = "sha256:7ea2d48322cc7c0f8b3a215ed73eabd7b5d75d0b50e31ab006286ccff9e00b8f"},
 ]
 wsproto = [
     {file = "wsproto-1.2.0-py3-none-any.whl", hash = "sha256:b9acddd652b585d75b20477888c56642fdade28bdfd3579aa24a4d2c037dd736"},
@@ -2460,4 +2496,8 @@ yarl = [
     {file = "yarl-1.8.1-cp39-cp39-win32.whl", hash = "sha256:8b0af1cf36b93cee99a31a545fe91d08223e64390c5ecc5e94c39511832a4bb6"},
     {file = "yarl-1.8.1-cp39-cp39-win_amd64.whl", hash = "sha256:de49d77e968de6626ba7ef4472323f9d2e5a56c1d85b7c0e2a190b2173d3b9be"},
     {file = "yarl-1.8.1.tar.gz", hash = "sha256:af887845b8c2e060eb5605ff72b6f2dd2aab7a761379373fd89d314f4752abbf"},
+]
+zipp = [
+    {file = "zipp-3.8.1-py3-none-any.whl", hash = "sha256:47c40d7fe183a6f21403a199b3e4192cca5774656965b0a4988ad2f8feb5f009"},
+    {file = "zipp-3.8.1.tar.gz", hash = "sha256:05b45f1ee8f807d0cc928485ca40a07cb491cf092ff587c0df9cb1fd154848d2"},
 ]
