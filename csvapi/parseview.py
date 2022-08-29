@@ -2,7 +2,6 @@ import os
 import tempfile
 
 import aiohttp
-from sqlalchemy import column
 import validators
 
 from quart import request, jsonify, current_app as app
@@ -16,7 +15,6 @@ from csvapi.utils import already_exists, get_hash, check_csv_detective_report_st
 
 from csvapi.setup_logger import logger
 from csvapi.type_tester import convert_types
-import os
 from config import DB_ROOT_DIR, CSV_SNIFF_LIMIT, MAX_FILE_SIZE
 
 from csv_detective.explore_csv import routine
@@ -31,7 +29,8 @@ class ParseView(MethodView):
             column_types.append(csv_detective_report['columns'][col]['python_type'])
         agate_types = convert_types(column_types)
 
-        await self.do_parse(url=url,
+        await self.do_parse(
+            url=url,
             urlhash=urlhash,
             encoding=csv_detective_report['encoding'],
             storage=storage,
@@ -40,7 +39,6 @@ class ParseView(MethodView):
             max_file_size=MAX_FILE_SIZE,
             agate_types=agate_types
         )
-
 
     @staticmethod
     async def do_parse(url, urlhash, encoding, storage, logger, sniff_limit, max_file_size, agate_types = None, analysis = None):

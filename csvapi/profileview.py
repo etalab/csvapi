@@ -17,15 +17,18 @@ from quart import current_app as app
 import json
 
 from csvapi.setup_logger import logger
+
+
 class ProfileView(MethodView):
 
     def get_dataframe(self, db_info, dtype=None):
         dsn = 'file:{}?immutable=1'.format(db_info['db_path'])
-        conn = sqlite3.connect(dsn)
+        conn = sqlite3.connect(dsn, uri=True)
         sql = 'SELECT * FROM [{}]'.format(db_info['table_name'])
         try:
             df = pd.read_sql_query(sql, con=conn, dtype=dtype)
-        except:
+        # TODO: check if correct exception type
+        except ValueError:
             df = pd.read_sql_query(sql, con=conn)
             logger.info('problem with python types')
         return df
@@ -33,7 +36,7 @@ class ProfileView(MethodView):
     def make_profile(self, db_info):
         df = self.get_dataframe(db_info)
 
-        if(app.config['PANDAS_PROFILING_CONFIG_MIN']):
+        if app.config['PANDAS_PROFILING_CONFIG_MIN']:
             profile = ProfileReport(df, config_file="profiling-minimal.yml")
         else:
             profile = ProfileReport(df)
@@ -56,7 +59,6 @@ class ProfileView(MethodView):
 
         return await send_from_directory(path.parent, path.name)
 
-
     async def get_minimal_profile(self, url: str, urlhash: str, csv_detective_report: dict) -> None:
         db_info = get_db_info(urlhash)
         p = Path(db_info['db_path'])
@@ -70,7 +72,11 @@ class ProfileView(MethodView):
 
                 python_types = convert_python_types(csv_detective_report['columns'])
                 df = self.get_dataframe(db_info, dtype=python_types)
-                profile = ProfileReport(df, minimal=True, vars=dict(num={"low_categorical_threshold": 0}), plot=dict(histogram={"bins": 10}))
+                profile = ProfileReport(
+                    df, minimal=True,
+                    vars=dict(num={"low_categorical_threshold": 0}),
+                    plot=dict(histogram={"bins": 10})
+                )
                 profile_report = json.loads(profile.to_json())
                 return profile_report
             except (sqlite3.OperationalError, sqlite3.IntegrityError) as e:

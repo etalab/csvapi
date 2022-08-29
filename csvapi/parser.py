@@ -11,7 +11,7 @@ from csvapi.setup_logger import logger
 
 
 SNIFF_LIMIT = 4096
-CSV_FILETYPES = ('text/plain', 'application/csv')
+CSV_FILETYPES = ('text/plain', 'application/csv', 'text/csv')
 
 
 def detect_type(filepath):
@@ -57,9 +57,8 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT, agate_types=No
             }
             logger.warning('Types from csv-detective provoke errors, use of agate type tester instead.')
             return agate.Table.from_csv(filepath, **kwargs)
-        except:
-            logger.error('Error casting')
-
+        except Exception as e:
+            logger.error('error casting %s', e)
 
 
 def from_excel(filepath, xlsx=False):
@@ -87,4 +86,3 @@ def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT, ag
     else:
         raise Exception(f'Unsupported file type {file_type}')
     return to_sql(table, urlhash, storage)
-

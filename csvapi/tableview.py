@@ -47,7 +47,9 @@ class TableView(MethodView):
     async def execute(self, sql, db_info, params=None):
         """Executes sql against db_name in a thread"""
         dsn = 'file:{}?immutable=1'.format(db_info['db_path'])
-        async with aiosqlite.connect(dsn) as conn:
+        # specify uri=True to make sure `file:xxx` is supported,
+        # however the backend sqlite is configured (eg default MacOS)
+        async with aiosqlite.connect(dsn, uri=True) as conn:
             conn.text_factory = lambda x: str(x, 'utf-8', 'replace')
             # this will raise
             #  {"details": "interrupted",
@@ -179,7 +181,7 @@ class TableView(MethodView):
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM general_infos'
             rows, description = await self.execute(
                 sql, db_info, params=params
@@ -190,11 +192,10 @@ class TableView(MethodView):
             for col in columns:
                 res[col] = rows[0][cpt]
                 cpt = cpt + 1
-            
+
             return res
         else:
             return {}
-    
 
     async def columns_infos(self, db_info):
         params = {}
@@ -202,7 +203,7 @@ class TableView(MethodView):
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM columns_infos'
             rows, description = await self.execute(
                 sql, db_info, params=params
@@ -216,7 +217,7 @@ class TableView(MethodView):
                 for col in columns[1:]:
                     res[row[0]][col] = row[cpt]
                     cpt = cpt + 1
-            
+
             res = await self.top_and_categorical_infos(db_info, res, 'top_infos')
             res = await self.top_and_categorical_infos(db_info, res, 'categorical_infos')
             res = await self.numeric_infos(db_info, res)
@@ -231,14 +232,14 @@ class TableView(MethodView):
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM {}'.format(table_name)
             rows, description = await self.execute(
                 sql, db_info, params=params
             )
-            
+
             for row in rows:
-                if(table_name not in res[row[0]]):
+                if table_name not in res[row[0]]:
                     res[row[0]][table_name] = []
                 inter = {}
                 inter['value'] = row[1]
@@ -257,16 +258,16 @@ class TableView(MethodView):
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM {}'.format('numeric_infos')
             rows, description = await self.execute(
                 sql, db_info, params=params
             )
-            
+
             for row in rows:
-                if('numeric_infos' not in res[row[0]]):
+                if 'numeric_infos' not in res[row[0]]:
                     res[row[0]]['numeric_infos'] = {}
-                
+
                 res[row[0]]['numeric_infos']['mean'] = row[1]
                 res[row[0]]['numeric_infos']['std'] = row[2]
                 res[row[0]]['numeric_infos']['min'] = row[3]
@@ -284,22 +285,22 @@ class TableView(MethodView):
         rows, description = await self.execute(
             sql, db_info, params=params
         )
-        if(rows[0][0] != 0):
+        if rows[0][0] != 0:
             sql = 'SELECT * FROM {}'.format('numeric_plot_infos')
             rows, description = await self.execute(
                 sql, db_info, params=params
             )
-            
+
             for row in rows:
-                if('numeric_plot_infos' not in res[row[0]]):
+                if 'numeric_plot_infos' not in res[row[0]]:
                     res[row[0]]['numeric_plot_infos'] = {}
-                if('counts' not in res[row[0]]['numeric_plot_infos']):
+                if 'counts' not in res[row[0]]['numeric_plot_infos']:
                     res[row[0]]['numeric_plot_infos']['counts'] = []
-                if('bin_edges' not in res[row[0]]['numeric_plot_infos']):
+                if 'bin_edges' not in res[row[0]]['numeric_plot_infos']:
                     res[row[0]]['numeric_plot_infos']['bin_edges'] = []
-                if(row[2] == 'counts'):
+                if row[2] == 'counts':
                     res[row[0]]['numeric_plot_infos']['counts'].append(row[1])
-                if(row[2] == 'bin_edges'):
+                if row[2] == 'bin_edges':
                     res[row[0]]['numeric_plot_infos']['bin_edges'].append(row[1])
 
             return res
@@ -307,4 +308,3 @@ class TableView(MethodView):
             for col in res:
                 res[col]['numeric_plot_infos'] = {}
             return res
-    

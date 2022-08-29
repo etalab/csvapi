@@ -14,7 +14,7 @@ executor = None
 
 
 def get_db_info(urlhash, storage=None):
-    if(app):
+    if app:
         # app.config not thread safe, sometimes we need to pass storage directly
         db_storage = storage or app.config['DB_ROOT_DIR']
         profile_storage = app.config['PROFILES_ROOT_DIR']
@@ -219,3 +219,4 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
     df_to_sql(numeric_plot_infos, conn, 'numeric_plot_infos')
 
     conn.commit()
+    

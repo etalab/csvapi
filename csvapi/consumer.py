@@ -1,18 +1,25 @@
-import logging
 import asyncio
+import json
+import os
+
+from datetime import datetime
+
+import boto3
+import pandas as pd
+
+from botocore.client import Config, ClientError
+
 from csvapi.parseview import ParseView
 from csvapi.profileview import ProfileView
 from csvapi.utils import enrich_db_with_metadata
 from csvapi.setup_logger import logger
 import os
 from csvapi.utils import get_hash, check_message_structure, check_csv_detective_report_structure, check_profile_report_structure
-
 from config import DB_ROOT_DIR
 
 MINIO_URL = os.environ.get("MINIO_URL", "http://localhost:9000")
 MINIO_USER = os.environ.get("MINIO_USER", "minio")
 MINIO_PASSWORD = os.environ.get("MINIO_PASSWORD", "password")
-
 
 import boto3
 from botocore.client import Config, ClientError
@@ -20,6 +27,7 @@ import json
 
 def run_process_message(key: str, data: dict, topic: str) -> None:
     asyncio.get_event_loop().run_until_complete(process_message(key, data, topic))
+
 
 async def process_message(key: str, message: dict, topic: str) -> None:
     if(message['service'] == "csvdetective"):
@@ -107,4 +115,4 @@ async def process_message(key: str, message: dict, topic: str) -> None:
             logger.error('Problem with structure message')
     else:
         logger.info('Message received from {} service - do not process'.format(message['service']))
-        
+      
