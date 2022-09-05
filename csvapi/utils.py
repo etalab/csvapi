@@ -54,7 +54,6 @@ def create_connection(db_file):
     return conn
 
 
-
 def keys_exists(element, *keys):
     '''
     Check if *keys (nested) exists in `element` (dict).
@@ -73,50 +72,49 @@ def keys_exists(element, *keys):
 
 
 def check_message_structure(message):
-    if ((message is not None) & \
-        (keys_exists(message, "service")) & \
-        (keys_exists(message, "value", "report_location", "bucket")) & \
-        (keys_exists(message, "value", "report_location", "key")) & \
-        (keys_exists(message, "meta", "dataset_id"))
-     ):
+    if (message is not None) & \
+            (keys_exists(message, "service")) & \
+            (keys_exists(message, "value", "report_location", "bucket")) & \
+            (keys_exists(message, "value", "report_location", "key")) & \
+            (keys_exists(message, "meta", "dataset_id")):
         return True
     else:
         return False
 
+
 def check_csv_detective_report_structure(report):
-    if((report is not None) & \
-        (keys_exists(report, "columns")) & \
-        (keys_exists(report, "encoding")) & \
-        (keys_exists(report, "separator")) & \
-        (keys_exists(report, "header_row_idx"))
-    ):
+    if (report is not None) and \
+            (keys_exists(report, "columns")) and \
+            (keys_exists(report, "encoding")) and \
+            (keys_exists(report, "separator")) and \
+            (keys_exists(report, "header_row_idx")):
+
         for item in report['columns']:
-            if((not keys_exists(report, "columns", item, "python_type")) | \
-                (not keys_exists(report, "columns", item, "format"))
-            ):
+            if (not keys_exists(report, "columns", item, "python_type")) | \
+                    (not keys_exists(report, "columns", item, "format")):
                 return False
         return True
     else:
         return False
 
+
 def check_profile_report_structure(report):
-    if((report is not None) & \
-        (keys_exists(report, "table", "n")) & \
-        (keys_exists(report, "table", "n_var")) & \
-        (keys_exists(report, "table", "n_cells_missing")) & \
-        (keys_exists(report, "table", "n_vars_with_missing")) & \
-        (keys_exists(report, "table", "n_vars_all_missing")) & \
-        (keys_exists(report, "table", "n_cells_missing")) & \
-        (keys_exists(report, "variables"))
-    ):
+    if (report is not None) and \
+            (keys_exists(report, "table", "n")) and \
+            (keys_exists(report, "table", "n_var")) and \
+            (keys_exists(report, "table", "n_cells_missing")) and \
+            (keys_exists(report, "table", "n_vars_with_missing")) and \
+            (keys_exists(report, "table", "n_vars_all_missing")) and \
+            (keys_exists(report, "table", "n_cells_missing")) and \
+            (keys_exists(report, "variables")):
+
         for item in report['variables']:
-            if((not keys_exists(report, "variables", item, "n_distinct")) | \
-                (not keys_exists(report, "variables", item, "is_unique")) | \
-                (not keys_exists(report, "variables", item, "n_unique")) | \
-                (not keys_exists(report, "variables", item, "type")) | \
-                (not keys_exists(report, "variables", item, "n_missing")) | \
-                (not keys_exists(report, "variables", item, "count"))
-            ):
+            if (not keys_exists(report, "variables", item, "n_distinct")) | \
+                    (not keys_exists(report, "variables", item, "is_unique")) | \
+                    (not keys_exists(report, "variables", item, "n_unique")) | \
+                    (not keys_exists(report, "variables", item, "type")) | \
+                    (not keys_exists(report, "variables", item, "n_missing")) | \
+                    (not keys_exists(report, "variables", item, "count")):
                 return False
         return True
     else:
@@ -125,14 +123,15 @@ def check_profile_report_structure(report):
 
 def df_to_sql(obj, conn, name):
     df = pd.DataFrame(obj)
-    if(df.shape[0] > 0):
-        df.to_sql(name,con=conn, if_exists='replace', index=False)
+    if df.shape[0] > 0:
+        df.to_sql(name, con=conn, if_exists='replace', index=False)
+
 
 def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, dataset_id, key):
     # Save to sql
-    conn = create_connection(DB_ROOT_DIR+'/'+urlhash+'.db')
-    #c = conn.cursor()
-    
+    conn = create_connection(DB_ROOT_DIR + '/' + urlhash + '.db')
+    # c = conn.cursor()
+
     general_infos = [
         {
             'encoding': csv_detective_report['encoding'],
@@ -149,7 +148,7 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
         }
     ]
     df = pd.DataFrame(general_infos)
-    df.to_sql('general_infos',con=conn, if_exists='replace', index=False)
+    df.to_sql('general_infos', con=conn, if_exists='replace', index=False)
 
     columns_infos = []
     categorical_infos = []
@@ -168,10 +167,12 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
         column_info['count'] = profile_report['variables'][col]['count']
         columns_infos.append(column_info)
 
-        if(csv_detective_report['columns'][col]['format'] in ['siren', 'siret', 'code_postal', 'code_commune_insee', 'code_departement', 'code_region', 'tel_fr']):
+        if csv_detective_report['columns'][col]['format'] in \
+                ['siren', 'siret', 'code_postal', 'code_commune_insee', 'code_departement', 'code_region', 'tel_fr']:
             column_info['type'] = 'Categorical'
 
-        if((column_info['type'] == 'Categorical') & (len(profile_report['variables'][col]['value_counts_without_nan']) < 10)):
+        if (column_info['type'] == 'Categorical') & \
+                (len(profile_report['variables'][col]['value_counts_without_nan']) < 10):
             for cat in profile_report['variables'][col]['value_counts_without_nan']:
                 categorical_info = {}
                 categorical_info['column'] = col
@@ -179,7 +180,7 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
                 categorical_info['nb'] = profile_report['variables'][col]['value_counts_without_nan'][cat]
                 categorical_infos.append(categorical_info)
 
-        if(column_info['type'] == 'Numeric'):
+        if column_info['type'] == 'Numeric':
             numeric_info = {}
             numeric_info['column'] = col
             numeric_info['mean'] = profile_report['variables'][col]['mean']
@@ -201,7 +202,6 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
                 numeric_plot_info['type'] = 'counts'
                 numeric_plot_infos.append(numeric_plot_info)
 
-
         cpt = 0
         for top in profile_report['variables'][col]['value_counts_without_nan']:
             if (cpt < 10):
@@ -211,7 +211,7 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
                 top_info['nb'] = profile_report['variables'][col]['value_counts_without_nan'][top]
                 top_infos.append(top_info)
                 cpt = cpt + 1
-    
+
     df_to_sql(columns_infos, conn, 'columns_infos')
     df_to_sql(categorical_infos, conn, 'categorical_infos')
     df_to_sql(top_infos, conn, 'top_infos')
@@ -219,4 +219,3 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
     df_to_sql(numeric_plot_infos, conn, 'numeric_plot_infos')
 
     conn.commit()
-    

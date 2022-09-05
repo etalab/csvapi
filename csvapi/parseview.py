@@ -11,13 +11,20 @@ from csvapi.profileview import ProfileView
 
 from csvapi.errors import APIError
 from csvapi.parser import parse
-from csvapi.utils import already_exists, get_hash, check_csv_detective_report_structure, check_profile_report_structure, enrich_db_with_metadata
+from csvapi.utils import (
+    already_exists,
+    get_hash,
+    check_csv_detective_report_structure,
+    check_profile_report_structure,
+    enrich_db_with_metadata
+)
 
 from csvapi.setup_logger import logger
 from csvapi.type_tester import convert_types
 from config import DB_ROOT_DIR, CSV_SNIFF_LIMIT, MAX_FILE_SIZE
 
 from csv_detective.explore_csv import routine
+
 
 class ParseView(MethodView):
 
@@ -41,7 +48,17 @@ class ParseView(MethodView):
         )
 
     @staticmethod
-    async def do_parse(url, urlhash, encoding, storage, logger, sniff_limit, max_file_size, agate_types = None, analysis = None):
+    async def do_parse(
+        url,
+        urlhash,
+        encoding,
+        storage,
+        logger,
+        sniff_limit,
+        max_file_size,
+        agate_types=None,
+        analysis=None
+    ):
         logger.debug('* do_parse %s (%s)', urlhash, url)
         tmp = tempfile.NamedTemporaryFile(delete=False)
         chunk_count = 0
@@ -63,42 +80,37 @@ class ParseView(MethodView):
             logger.debug('* Downloaded %s', urlhash)
             logger.debug('* Parsing %s...', urlhash)
             parse(tmp.name, urlhash, storage, encoding=encoding, sniff_limit=sniff_limit, agate_types=agate_types)
-            
-            if(analysis and analysis == 'yes'):
-                try:
-                        
-                    csv_detective_report = routine(tmp.name)
-                    logger.info(csv_detective_report)
-                
-                    if not check_csv_detective_report_structure(csv_detective_report):
-                        logger.error(
-                            "csvdetective report malformed"
-                        )
-                        return
 
-                    profileViewInstance = ProfileView()
-                    profile_report = await profileViewInstance.get_minimal_profile(
-                        profileViewInstance,
-                        urlhash=urlhash,
-                        csv_detective_report = csv_detective_report
-                    )               
+            if analysis and analysis == 'yes':
+                csv_detective_report = routine(tmp.name)
+                logger.info(csv_detective_report)
 
-                    if not check_profile_report_structure(profile_report):
-                        logger.error(
-                            "pandas profiling report malformed"
-                        )
-                        return
-                    
-                    enrich_db_with_metadata(
-                        urlhash,
-                        csv_detective_report,
-                        profile_report,
-                        None,
-                        None
+                if not check_csv_detective_report_structure(csv_detective_report):
+                    logger.error(
+                        "csvdetective report malformed"
                     )
-                except:
-                    pass
+                    return
 
+                profileViewInstance = ProfileView()
+                profile_report = await profileViewInstance.get_minimal_profile(
+                    profileViewInstance,
+                    urlhash=urlhash,
+                    csv_detective_report=csv_detective_report
+                )
+
+                if not check_profile_report_structure(profile_report):
+                    logger.error(
+                        "pandas profiling report malformed"
+                    )
+                    return
+
+                enrich_db_with_metadata(
+                    urlhash,
+                    csv_detective_report,
+                    profile_report,
+                    None,
+                    None
+                )
 
             logger.debug('* Parsed %s', urlhash)
         finally:
@@ -126,7 +138,6 @@ class ParseView(MethodView):
                                     sniff_limit=app.config.get('CSV_SNIFF_LIMIT'),
                                     max_file_size=app.config.get('MAX_FILE_SIZE'),
                                     analysis=analysis)
-                                    
             except Exception as e:
                 raise APIError('Error parsing CSV: %s' % e)
         else:
