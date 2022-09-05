@@ -1293,7 +1293,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<4"
-content-hash = "fa495708d24f4b9796ef057ecac49e35655e6003b9db83974e2c4671bd24167a"
+content-hash = "16cbfae65763fcc1945256e941366e5890ad8c0cb50c6ed5cf526f56505a393d"
 
 [metadata.files]
 agate = [

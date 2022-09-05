@@ -28,6 +28,7 @@ boto3 = "~1.21.21"
 Jinja2 = "~3.0.3"
 Werkzeug = "~1.0.0"
 csv-detective = "~0.4.5"
+setuptools = "~65.3.0"
 
 [tool.poetry.dev-dependencies]
 aioresponses = "~0.7.1"
