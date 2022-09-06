@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "/Users/geoffrey/.pyenv/versions/3.9.7/envs/csvapi/bin/python",
+    "python.linting.enabled": true,
+    "python.linting.flake8Args": ["--ignore=E24,W504", "--verbose"]
+}

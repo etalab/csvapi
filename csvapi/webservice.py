@@ -3,7 +3,7 @@ import traceback
 
 from quart import Quart, jsonify
 from quart_cors import cors
-from quart.exceptions import NotFound
+from werkzeug.exceptions import NotFound
 
 from csvapi.errors import APIError
 from csvapi.tableview import TableView

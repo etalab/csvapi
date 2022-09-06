@@ -55,6 +55,7 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT, agate_types=No
                 'encoding': encoding,
                 'column_types': agate_tester()
             }
+            logger.warning('Types from csv-detective provoke errors, use of agate type tester instead.')
             return agate.Table.from_csv(filepath, **kwargs)
         except Exception as e:
             logger.error('error casting %s', e)

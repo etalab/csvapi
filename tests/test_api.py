@@ -269,7 +269,8 @@ async def test_api_objects_shape(client, rmock, uploaded_csv):
     res = await client.get(f"/api/{MOCK_CSV_HASH}?_shape=objects")
     assert res.status_code == 200
     jsonres = await res.json
-    assert jsonres['rows'] == [{
+    assert jsonres['rows'] == [
+        {
             'rowid': 1,
             'col a': 'data à1',
             'col b': 'data b1',
@@ -279,14 +280,16 @@ async def test_api_objects_shape(client, rmock, uploaded_csv):
             'col a': 'data ª2',
             'col b': 'data b2',
             'col c': 'a',
-    }]
+        }
+    ]
 
 
 async def test_api_objects_norowid(client, rmock, uploaded_csv):
     res = await client.get(f"/api/{MOCK_CSV_HASH}?_shape=objects&_rowid=hide")
     assert res.status_code == 200
     jsonres = await res.json
-    assert jsonres['rows'] == [{
+    assert jsonres['rows'] == [
+        {
             'col a': 'data à1',
             'col b': 'data b1',
             'col c': 'z',
@@ -294,7 +297,8 @@ async def test_api_objects_norowid(client, rmock, uploaded_csv):
             'col a': 'data ª2',
             'col b': 'data b2',
             'col c': 'a',
-    }]
+        }
+    ]
 
 
 async def test_api_objects_nototal(client, rmock, uploaded_csv):
