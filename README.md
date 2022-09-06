@@ -6,7 +6,7 @@ This tool is used by [data.gouv.fr](https://www.data.gouv.fr) to show a preview 
 
 ## Installation
 
-Requires Python 3.7+ and a Unix OS with the `file` command available.
+Requires Python 3.9+ and a Unix OS with the `file` command available.
 
 ```shell
 python3 -m venv pyenv && . pyenv/bin/activate
@@ -16,20 +16,19 @@ pip install csvapi
 For development:
 
 ```shell
-pip install -r requirements/develop.pip
-pip install -e .
+poetry install
 ```
 
 ## Quickstart
 
 ```shell
-csvapi serve -h 0.0.0.0 -p 8000
+poetry run csvapi serve -h 0.0.0.0 -p 8000
 ```
 
 ## Command line options
 
 ```shell
-$ csvapi serve --help
+$ poetry run csvapi serve --help
 Usage: csvapi serve [OPTIONS]
 
 Options:
@@ -244,10 +243,6 @@ By adding `{column}__{comparator}={value}` to the query string, you can filter t
 - `{value}` is the value you're filtering the column against
 
 You can add multiple filters, they will be joined with a `AND` at the SQL level.
-
-## Production deployment
-
-Some example [Ansible 2](https://www.ansible.com) roles are [available here](/ansible).
 
 ## Credits
 

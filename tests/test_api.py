@@ -3,6 +3,7 @@ import uuid
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 from aioresponses import aioresponses
 
 from csvapi.utils import get_hash
@@ -105,7 +106,7 @@ def random_url():
     return f"https://example.com/{uuid.uuid4()}.csv"
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def uploaded_csv(rmock, csv, client):
     content = csv.replace('<sep>', ';').encode('utf-8')
     rmock.get(MOCK_CSV_URL, body=content)
@@ -268,7 +269,8 @@ async def test_api_objects_shape(client, rmock, uploaded_csv):
     res = await client.get(f"/api/{MOCK_CSV_HASH}?_shape=objects")
     assert res.status_code == 200
     jsonres = await res.json
-    assert jsonres['rows'] == [{
+    assert jsonres['rows'] == [
+        {
             'rowid': 1,
             'col a': 'data à1',
             'col b': 'data b1',
@@ -278,14 +280,16 @@ async def test_api_objects_shape(client, rmock, uploaded_csv):
             'col a': 'data ª2',
             'col b': 'data b2',
             'col c': 'a',
-    }]
+        }
+    ]
 
 
 async def test_api_objects_norowid(client, rmock, uploaded_csv):
     res = await client.get(f"/api/{MOCK_CSV_HASH}?_shape=objects&_rowid=hide")
     assert res.status_code == 200
     jsonres = await res.json
-    assert jsonres['rows'] == [{
+    assert jsonres['rows'] == [
+        {
             'col a': 'data à1',
             'col b': 'data b1',
             'col c': 'z',
@@ -293,7 +297,8 @@ async def test_api_objects_norowid(client, rmock, uploaded_csv):
             'col a': 'data ª2',
             'col b': 'data b2',
             'col c': 'a',
-    }]
+        }
+    ]
 
 
 async def test_api_objects_nototal(client, rmock, uploaded_csv):
@@ -396,7 +401,7 @@ async def test_real_xls_files(client, rmock, xls_path):
     assert len(jsonres['rows']) > 0
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def uploaded_csv_filters(rmock, csv_filters, client):
     content = csv_filters.encode('utf-8')
     rmock.get(MOCK_CSV_URL_FILTERS, body=content)
