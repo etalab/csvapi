@@ -97,7 +97,7 @@ c<sep>12
 
 
 @pytest.fixture
-def csv_top_empty_missing():
+def csv_top():
     return """cat<sep>value
 a<sep>15
 b<sep>13
@@ -538,8 +538,8 @@ async def test_apify_analysed_pandas_profiling_check_numeric(rmock, csv_numeric,
     assert jsonres['columns_infos']['value']['numeric_infos']['mean'] == 6
 
 
-async def test_apify_analysed_pandas_profiling_check_top(rmock, csv_top_empty_missing, client):
-    content = csv_top_empty_missing.replace('<sep>', ';').encode('utf-8')
+async def test_apify_analysed_pandas_profiling_check_top(rmock, csv_top, client):
+    content = csv_top.replace('<sep>', ';').encode('utf-8')
     url = random_url()
     rmock.get(url, body=content)
     await client.get(f"/apify?url={url}&analysis=yes")
@@ -549,8 +549,8 @@ async def test_apify_analysed_pandas_profiling_check_top(rmock, csv_top_empty_mi
     assert jsonres['columns_infos']['cat']['top_infos'][0]['value'] == 'a'
 
 
-async def test_apify_analysed_check_general_infos(rmock, csv_top_empty_missing, client):
-    content = csv_top_empty_missing.replace('<sep>', ';').encode('utf-8')
+async def test_apify_analysed_check_general_infos(rmock, csv_top, client):
+    content = csv_top.replace('<sep>', ';').encode('utf-8')
     url = random_url()
     rmock.get(url, body=content)
     await client.get(f"/apify?url={url}&analysis=yes")
