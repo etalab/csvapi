@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 from pathlib import Path
@@ -83,6 +84,25 @@ def csv_siren_siret():
     return """id<sep>siren<sep>siret
 a<sep>130025265<sep>13002526500013
 b<sep>522816651<sep>52281665100056
+"""
+
+
+@pytest.fixture
+def csv_numeric():
+    return """id<sep>value
+a<sep>2
+b<sep>4
+c<sep>12
+"""
+
+
+@pytest.fixture
+def csv_top_empty_missing():
+    return """cat<sep>value
+a<sep>15
+b<sep>13
+c<sep>11
+a<sep>9
 """
 
 
@@ -467,3 +487,77 @@ async def test_api_filters_unnormalized_column(rmock, uploaded_csv_filters, clie
     assert jsonres['rows'] == [
         [1, 'first', '12:30', 1.0, 'value'],
     ]
+
+
+async def test_apify_analysed_format_response(rmock, csv_siren_siret, client):
+    content = csv_siren_siret.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert all(x in jsonres['columns_infos'] for x in ['id', 'siren', 'siret'])
+    assert all(x in jsonres['general_infos'] for x in [
+        'dataset_id', 
+        'date_last_check',
+        'encoding',
+        'header_row_idx',
+        'nb_cells_missing',
+        'nb_columns',
+        'nb_vars_all_missing',
+        'nb_vars_with_missing',
+        'resource_id',
+        'separator', 
+        'total_lines'
+    ])
+
+
+async def test_apify_analysed_csv_detective_check_format(rmock, csv_siren_siret, client):
+    content = csv_siren_siret.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns_infos']['siren']['format'] == 'siren'
+    assert jsonres['columns_infos']['siret']['format'] == 'siret'
+
+
+async def test_apify_analysed_pandas_profiling_check_numeric(rmock, csv_numeric, client):
+    content = csv_numeric.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns_infos']['value']['numeric_infos']['max'] == 12
+    assert jsonres['columns_infos']['value']['numeric_infos']['min'] == 2
+    assert jsonres['columns_infos']['value']['numeric_infos']['mean'] == 6
+
+
+async def test_apify_analysed_pandas_profiling_check_top(rmock, csv_top_empty_missing, client):
+    content = csv_top_empty_missing.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns_infos']['cat']['top_infos'][0]['value'] == 'a'
+
+
+async def test_apify_analysed_check_general_infos(rmock, csv_top_empty_missing, client):
+    content = csv_top_empty_missing.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['general_infos']['nb_columns'] == 2
+    assert jsonres['general_infos']['total_lines'] == 4
+    assert jsonres['general_infos']['separator'] == ';'
+    assert jsonres['general_infos']['header_row_idx'] == 0

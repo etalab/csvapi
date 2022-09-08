@@ -1,14 +1,12 @@
 import os
 
 import agate
-import agatesql  # noqa
 import cchardet as chardet
 
 from csvapi.utils import get_db_info
 from csvapi.type_tester import agate_tester
 
-from csvapi.setup_logger import logger
-
+from quart import current_app as app
 
 SNIFF_LIMIT = 4096
 CSV_FILETYPES = ('text/plain', 'application/csv', 'text/csv')
@@ -55,10 +53,10 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT, agate_types=No
                 'encoding': encoding,
                 'column_types': agate_tester()
             }
-            logger.warning('Types from csv-detective provoke errors, use of agate type tester instead.')
+            app.logger.warning('Types from csv-detective provoke errors, use of agate type tester instead.')
             return agate.Table.from_csv(filepath, **kwargs)
         except Exception as e:
-            logger.error('error casting %s', e)
+            app.logger.error('error casting %s', e)
 
 
 def from_excel(filepath, xlsx=False):

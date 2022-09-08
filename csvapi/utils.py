@@ -4,8 +4,6 @@ from pathlib import Path
 
 from quart import current_app as app
 
-from config import PROFILES_ROOT_DIR, DB_ROOT_DIR
-
 import sqlite3
 from datetime import datetime
 import pandas as pd
@@ -18,9 +16,6 @@ def get_db_info(urlhash, storage=None):
         # app.config not thread safe, sometimes we need to pass storage directly
         db_storage = storage or app.config['DB_ROOT_DIR']
         profile_storage = app.config['PROFILES_ROOT_DIR']
-    else:
-        db_storage = DB_ROOT_DIR
-        profile_storage = PROFILES_ROOT_DIR
 
     db_path = f"{db_storage}/{urlhash}.db"
     profile_path = f"{profile_storage}/{urlhash}.html"
@@ -71,17 +66,6 @@ def keys_exists(element, *keys):
     return True
 
 
-def check_message_structure(message):
-    if (message is not None) & \
-            (keys_exists(message, "service")) & \
-            (keys_exists(message, "value", "report_location", "bucket")) & \
-            (keys_exists(message, "value", "report_location", "key")) & \
-            (keys_exists(message, "meta", "dataset_id")):
-        return True
-    else:
-        return False
-
-
 def check_csv_detective_report_structure(report):
     if (report is not None) and \
             (keys_exists(report, "columns")) and \
@@ -129,8 +113,7 @@ def df_to_sql(obj, conn, name):
 
 def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, dataset_id, key):
     # Save to sql
-    conn = create_connection(DB_ROOT_DIR + '/' + urlhash + '.db')
-    # c = conn.cursor()
+    conn = create_connection(app.config['DB_ROOT_DIR'] + '/' + urlhash + '.db')
 
     general_infos = [
         {

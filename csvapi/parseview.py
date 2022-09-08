@@ -19,33 +19,10 @@ from csvapi.utils import (
     enrich_db_with_metadata
 )
 
-from csvapi.setup_logger import logger
-from csvapi.type_tester import convert_types
-from config import DB_ROOT_DIR, CSV_SNIFF_LIMIT, MAX_FILE_SIZE
-
 from csv_detective.explore_csv import routine
 
 
 class ParseView(MethodView):
-
-    @staticmethod
-    async def parse_from_consumer(self, url: str, urlhash: str, csv_detective_report: dict) -> None:
-        storage = DB_ROOT_DIR
-        column_types = []
-        for col in csv_detective_report['columns']:
-            column_types.append(csv_detective_report['columns'][col]['python_type'])
-        agate_types = convert_types(column_types)
-
-        await self.do_parse(
-            url=url,
-            urlhash=urlhash,
-            encoding=csv_detective_report['encoding'],
-            storage=storage,
-            logger=logger,
-            sniff_limit=CSV_SNIFF_LIMIT,
-            max_file_size=MAX_FILE_SIZE,
-            agate_types=agate_types
-        )
 
     @staticmethod
     async def do_parse(
@@ -83,7 +60,6 @@ class ParseView(MethodView):
 
             if analysis and analysis == 'yes':
                 csv_detective_report = routine(tmp.name)
-                logger.info(csv_detective_report)
 
                 if not check_csv_detective_report_structure(csv_detective_report):
                     logger.error(

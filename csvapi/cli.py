@@ -3,9 +3,6 @@ import ssl
 import os
 from click_default_group import DefaultGroup
 
-from udata_event_service.consumer import consume_kafka
-from csvapi.consumer import run_process_message
-
 from csvapi.webservice import app
 
 RESPONSE_TIMEOUT = 5 * 60  # in seconds
@@ -53,15 +50,3 @@ def serve(dbs, host, port, debug, reload, cache, max_workers, ssl_cert, ssl_key)
         'RESPONSE_TIMEOUT': RESPONSE_TIMEOUT,
     })
     app.run(host=host, port=port, debug=debug, use_reloader=reload, ssl=ssl_context)
-
-
-@cli.command()
-def consume() -> None:
-    consume_kafka(
-        kafka_uri=f'{os.environ.get("KAFKA_HOST", "localhost")}:{os.environ.get("KAFKA_PORT", "9092")}',
-        group_id="csvapi",
-        topics=os.environ.get(
-            "TOPICS", [os.environ.get("UDATA_INSTANCE_NAME", "udata")+".resource.analysed"]
-        ),
-        message_processing_func=run_process_message,
-    )

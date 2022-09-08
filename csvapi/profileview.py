@@ -16,8 +16,6 @@ from quart import current_app as app
 
 import json
 
-from csvapi.setup_logger import logger
-
 
 class ProfileView(MethodView):
 
@@ -30,7 +28,7 @@ class ProfileView(MethodView):
         # TODO: check if correct exception type
         except ValueError:
             df = pd.read_sql_query(sql, con=conn)
-            logger.info('problem with python types')
+            app.logger.debug('problem with python types')
         return df
 
     def make_profile(self, db_info):
