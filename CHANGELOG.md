@@ -4,6 +4,8 @@
 
 - [BREAKING] Migrate to python >= 3.9
 - Migrate to poetry
+- Enrich sqlite dbs with metadata extracted from csv-detective and pandas profiling
+- Enrich apify api with possibility to analyse resource 
 
 ## 1.2.1 (2021-04-29)
 
