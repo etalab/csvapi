@@ -103,7 +103,7 @@ class ParseView(MethodView):
             raise APIError('Malformed url parameter.', status=400)
         urlhash = get_hash(url)
         analysis = request.args.get('analysis')
-        if not already_exists(urlhash):
+        if not await already_exists(urlhash, analysis):
             try:
                 storage = app.config['DB_ROOT_DIR']
                 await self.do_parse(url=url,

@@ -36,11 +36,29 @@ def get_hash_bytes(to_hash):
     return hashlib.md5(to_hash).hexdigest()
 
 
-def already_exists(urlhash):
+async def already_exists(urlhash, analysis=None):
+    '''
+    Check if db exist. If analysis is requested, we check if general_infos table exist.
+    If not, we bypass cache and do a new download of file to analyse it with pp and csv-detective. 
+    '''
     cache_enabled = app.config.get('CSV_CACHE_ENABLED')
     if not cache_enabled:
         return False
-    return Path(get_db_info(urlhash)['db_path']).exists()
+    
+    db_exist = Path(get_db_info(urlhash)['db_path']).exists()
+
+    if not analysis or analysis != 'yes':
+        return db_exist
+    else:
+        conn = create_connection(get_db_info(urlhash)['db_path'])
+        cur = conn.cursor()
+        sql = 'SELECT count(*) FROM sqlite_master WHERE type=\'table\' AND name=\'general_infos\''
+        cur.execute(sql)
+        rows = cur.fetchall()
+        if rows[0][0] != 0:
+            return True
+        else:
+            return False
 
 
 def create_connection(db_file):
