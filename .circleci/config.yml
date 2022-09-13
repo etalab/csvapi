@@ -13,7 +13,7 @@ parameters:
     default: "master"
   cache-prefix:
     type: string
-    default: "py-cache-v1"
+    default: "py-cache-v2"
 
 jobs:
   install:
