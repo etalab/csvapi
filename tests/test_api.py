@@ -1,4 +1,3 @@
-import json
 import os
 import uuid
 from pathlib import Path
@@ -499,7 +498,7 @@ async def test_apify_analysed_format_response(rmock, csv_siren_siret, client):
     jsonres = await res.json
     assert all(x in jsonres['columns_infos'] for x in ['id', 'siren', 'siret'])
     assert all(x in jsonres['general_infos'] for x in [
-        'dataset_id', 
+        'dataset_id',
         'date_last_check',
         'encoding',
         'header_row_idx',
@@ -508,7 +507,7 @@ async def test_apify_analysed_format_response(rmock, csv_siren_siret, client):
         'nb_vars_all_missing',
         'nb_vars_with_missing',
         'resource_id',
-        'separator', 
+        'separator',
         'total_lines'
     ])
 
