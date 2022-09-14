@@ -67,7 +67,7 @@ class ParseView(MethodView):
                 agate_types=agate_types
             )
 
-            if isCsv and analysis and analysis == 'yes':
+            if is_csv and analysis and analysis == 'yes':
                 csv_detective_report = routine(tmp.name)
 
                 if not check_csv_detective_report_structure(csv_detective_report):
@@ -97,7 +97,7 @@ class ParseView(MethodView):
                     None
                 )
 
-            if not isCsv and analysis and analysis == 'yes':
+            if not is_csv and analysis and analysis == 'yes':
                 conn = create_connection(app.config['DB_ROOT_DIR'] + '/' + urlhash + '.db')
                 general_infos = [
                     {
