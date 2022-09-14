@@ -576,4 +576,4 @@ async def test_no_analysis_when_excel(client, rmock, extension):
     jsonres = await res.json
     assert jsonres['columns'] == ['rowid', 'col a', 'col b', 'col c']
     assert jsonres['general_infos'] == {}
-    assert jsonres['general_infos'] == {}
+    assert jsonres['columns_infos'] == {}
