@@ -58,7 +58,7 @@ class ParseView(MethodView):
 
             logger.debug('* Downloaded %s', urlhash)
             logger.debug('* Parsing %s...', urlhash)
-            isCsv = parse(
+            is_csv = parse(
                 tmp.name,
                 urlhash,
                 storage,
