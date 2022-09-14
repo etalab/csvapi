@@ -560,3 +560,20 @@ async def test_apify_analysed_check_general_infos(rmock, csv_top, client):
     assert jsonres['general_infos']['total_lines'] == 4
     assert jsonres['general_infos']['separator'] == ';'
     assert jsonres['general_infos']['header_row_idx'] == 0
+
+
+@pytest.mark.parametrize('extension', ['xls', 'xlsx'])
+async def test_no_analysis_when_excel(client, rmock, extension):
+    here = os.path.dirname(os.path.abspath(__file__))
+    content = open(f"{here}/samples/test.{extension}", 'rb')
+    mock_url = MOCK_CSV_URL.replace('.csv', extension)
+    mock_hash = get_hash(mock_url)
+    rmock.get(mock_url, body=content.read())
+    content.close()
+    await client.get(f"/apify?url={mock_url}&analysis=yes")
+    res = await client.get(f"/api/{mock_hash}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns'] == ['rowid', 'col a', 'col b', 'col c']
+    assert jsonres['general_infos'] == {}
+    assert jsonres['general_infos'] == {}
