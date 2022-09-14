@@ -145,7 +145,8 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
             'nb_vars_all_missing': profile_report['table']['n_vars_all_missing'],
             'date_last_check': datetime.today().strftime('%Y-%m-%d'),
             'dataset_id': dataset_id,
-            'resource_id': key
+            'resource_id': key,
+            'filetype': 'csv'
         }
     ]
     df = pd.DataFrame(general_infos)

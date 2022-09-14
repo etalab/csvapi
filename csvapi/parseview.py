@@ -3,6 +3,7 @@ import tempfile
 
 import aiohttp
 import validators
+import pandas as pd
 
 from quart import request, jsonify, current_app as app
 from quart.views import MethodView
@@ -16,6 +17,7 @@ from csvapi.utils import (
     get_hash,
     check_csv_detective_report_structure,
     check_profile_report_structure,
+    create_connection,
     enrich_db_with_metadata
 )
 
@@ -94,6 +96,16 @@ class ParseView(MethodView):
                     None,
                     None
                 )
+
+            if not isCsv and analysis and analysis == 'yes':
+                conn = create_connection(app.config['DB_ROOT_DIR'] + '/' + urlhash + '.db')
+                general_infos = [
+                    {
+                        'filetype': 'excel'
+                    }
+                ]
+                df = pd.DataFrame(general_infos)
+                df.to_sql('general_infos', con=conn, if_exists='replace', index=False)
 
             logger.debug('* Parsed %s', urlhash)
         finally:

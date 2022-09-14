@@ -508,7 +508,8 @@ async def test_apify_analysed_format_response(rmock, csv_siren_siret, client):
         'nb_vars_with_missing',
         'resource_id',
         'separator',
-        'total_lines'
+        'total_lines',
+        'filetype'
     ])
 
 
@@ -574,6 +575,7 @@ async def test_no_analysis_when_excel(client, rmock, extension):
     res = await client.get(f"/api/{mock_hash}")
     assert res.status_code == 200
     jsonres = await res.json
+    print(jsonres)
     assert jsonres['columns'] == ['rowid', 'col a', 'col b', 'col c']
-    assert jsonres['general_infos'] == {}
+    assert jsonres['general_infos'] == { 'filetype': 'excel' }
     assert jsonres['columns_infos'] == {}
