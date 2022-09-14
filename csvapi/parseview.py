@@ -56,7 +56,14 @@ class ParseView(MethodView):
 
             logger.debug('* Downloaded %s', urlhash)
             logger.debug('* Parsing %s...', urlhash)
-            isCsv = parse(tmp.name, urlhash, storage, encoding=encoding, sniff_limit=sniff_limit, agate_types=agate_types)
+            isCsv = parse(
+                tmp.name,
+                urlhash,
+                storage,
+                encoding=encoding,
+                sniff_limit=sniff_limit,
+                agate_types=agate_types
+            )
 
             if isCsv and analysis and analysis == 'yes':
                 csv_detective_report = routine(tmp.name)
