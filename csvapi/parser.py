@@ -73,6 +73,7 @@ def to_sql(table, urlhash, storage):
 
 
 def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT, agate_types=None):
+    is_csv = False
     file_type = detect_type(filepath)
     if 'application/vnd.ms-excel' in file_type:
         table = from_excel(filepath)
@@ -81,6 +82,8 @@ def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT, ag
     elif any([supported in file_type for supported in CSV_FILETYPES]):
         encoding = detect_encoding(filepath) if not encoding else encoding
         table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit, agate_types=agate_types)
+        is_csv = True
     else:
         raise Exception(f'Unsupported file type {file_type}')
-    return to_sql(table, urlhash, storage)
+    to_sql(table, urlhash, storage)
+    return is_csv
