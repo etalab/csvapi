@@ -36,6 +36,9 @@ pytest-cov = "~3.0.0"
 [tool.poetry.scripts]
 csvapi = "csvapi.cli:cli"
 
+[tool.poetry.group.dev.dependencies]
+bumpr = "^0.3.8"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

@@ -189,6 +189,17 @@ urllib3 = ">=1.25.4,<1.27"
 crt = ["awscrt (==0.14.0)"]
 
 [[package]]
+name = "bumpr"
+version = "0.3.8"
+description = "Version bumper and Python package releaser"
+category = "dev"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[package.extras]
+doc = ["mkdocs (>=1.2.3,<2.0.0)", "mkdocs-include-markdown-plugin (>=3.2.3,<4.0.0)", "mkdocs-material (>=7.3.5,<8.0.0)", "mkdocstrings (>=0.16.2,<0.17.0)"]
+
+[[package]]
 name = "cchardet"
 version = "2.1.7"
 description = "cChardet is high speed universal character encoding detector."
@@ -1334,7 +1345,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<4"
-content-hash = "d13c547b8c1798fecaa14176fa7c250f6107b40fb3d00493670bfd3715c88f6e"
+content-hash = "575292ba57f0006d76fe2ce92fe580785e1a1c58e5d259ca569fcdb4a3abc893"
 
 [metadata.files]
 agate = [
@@ -1462,6 +1473,10 @@ boto3 = [
 botocore = [
     {file = "botocore-1.27.66-py3-none-any.whl", hash = "sha256:6293d1cb392a4779cf0a44055cae9ac0728809c14a11f2d91e679a00a9beae20"},
     {file = "botocore-1.27.66.tar.gz", hash = "sha256:6c8c8c82b38ba2353bd3bc071019ab44d8a160b9d17f3ab166f0ceaf1ca38c12"},
+]
+bumpr = [
+    {file = "bumpr-0.3.8-py3-none-any.whl", hash = "sha256:1cdfe40b618d97ee3af07f74b3983c0bc5c68a369cc317995259e241438b93a6"},
+    {file = "bumpr-0.3.8.tar.gz", hash = "sha256:6bfdda629f7816012c0e3dcaca54b6228e25b2159956049639b329389f0348ad"},
 ]
 cchardet = [
     {file = "cchardet-2.1.7-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c6f70139aaf47ffb94d89db603af849b82efdf756f187cdd3e566e30976c519f"},
