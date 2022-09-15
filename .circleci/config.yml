@@ -111,17 +111,29 @@ workflows:
   version: 2
   build:
     jobs:
-      - install
+      - install:
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
       - lint:
           requires:
             - install
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
       - tests:
           requires:
             - install
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
       - build:
           requires:
             - tests
             - lint
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
       - publish:
           requires:
             - build
