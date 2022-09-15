@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 2.0.0 (2022-09-15)
 
 - [BREAKING] Migrate to python >= 3.9 [#104](https://github.com/etalab/csvapi/pull/104)
 - Migrate to poetry [#104](https://github.com/etalab/csvapi/pull/104)
