@@ -2,10 +2,10 @@
 
 ## Current (in progress)
 
-- [BREAKING] Migrate to python >= 3.9
-- Migrate to poetry
-- Enrich sqlite dbs with metadata extracted from csv-detective and pandas profiling
-- Enrich apify api with possibility to analyse resource 
+- [BREAKING] Migrate to python >= 3.9 [#104](https://github.com/etalab/csvapi/pull/104)
+- Migrate to poetry [#104](https://github.com/etalab/csvapi/pull/104)
+- Enrich sqlite dbs with metadata extracted from csv-detective and pandas profiling [#104](https://github.com/etalab/csvapi/pull/104)
+- Enrich apify api with possibility to analyse resource [#104](https://github.com/etalab/csvapi/pull/104)
 
 ## 1.2.1 (2021-04-29)
 
