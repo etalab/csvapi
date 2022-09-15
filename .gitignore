@@ -5,4 +5,5 @@ profiles/*.html
 build/
 dist/
 reports/
+.vscode/
 .pytest_cache/

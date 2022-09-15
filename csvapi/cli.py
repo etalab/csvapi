@@ -1,6 +1,5 @@
 import click
 import ssl
-
 from click_default_group import DefaultGroup
 
 from csvapi.webservice import app

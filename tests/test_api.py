@@ -3,6 +3,7 @@ import uuid
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 from aioresponses import aioresponses
 
 from csvapi.utils import get_hash
@@ -86,6 +87,25 @@ b<sep>522816651<sep>52281665100056
 
 
 @pytest.fixture
+def csv_numeric():
+    return """id<sep>value
+a<sep>2
+b<sep>4
+c<sep>12
+"""
+
+
+@pytest.fixture
+def csv_top():
+    return """cat<sep>value
+a<sep>15
+b<sep>13
+c<sep>11
+a<sep>9
+"""
+
+
+@pytest.fixture
 def csv_custom_types_double_cr():
     """
     This is clearly an invalid file (double CR)
@@ -105,7 +125,7 @@ def random_url():
     return f"https://example.com/{uuid.uuid4()}.csv"
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def uploaded_csv(rmock, csv, client):
     content = csv.replace('<sep>', ';').encode('utf-8')
     rmock.get(MOCK_CSV_URL, body=content)
@@ -268,7 +288,8 @@ async def test_api_objects_shape(client, rmock, uploaded_csv):
     res = await client.get(f"/api/{MOCK_CSV_HASH}?_shape=objects")
     assert res.status_code == 200
     jsonres = await res.json
-    assert jsonres['rows'] == [{
+    assert jsonres['rows'] == [
+        {
             'rowid': 1,
             'col a': 'data à1',
             'col b': 'data b1',
@@ -278,14 +299,16 @@ async def test_api_objects_shape(client, rmock, uploaded_csv):
             'col a': 'data ª2',
             'col b': 'data b2',
             'col c': 'a',
-    }]
+        }
+    ]
 
 
 async def test_api_objects_norowid(client, rmock, uploaded_csv):
     res = await client.get(f"/api/{MOCK_CSV_HASH}?_shape=objects&_rowid=hide")
     assert res.status_code == 200
     jsonres = await res.json
-    assert jsonres['rows'] == [{
+    assert jsonres['rows'] == [
+        {
             'col a': 'data à1',
             'col b': 'data b1',
             'col c': 'z',
@@ -293,7 +316,8 @@ async def test_api_objects_norowid(client, rmock, uploaded_csv):
             'col a': 'data ª2',
             'col b': 'data b2',
             'col c': 'a',
-    }]
+        }
+    ]
 
 
 async def test_api_objects_nototal(client, rmock, uploaded_csv):
@@ -396,7 +420,7 @@ async def test_real_xls_files(client, rmock, xls_path):
     assert len(jsonres['rows']) > 0
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def uploaded_csv_filters(rmock, csv_filters, client):
     content = csv_filters.encode('utf-8')
     rmock.get(MOCK_CSV_URL_FILTERS, body=content)
@@ -462,3 +486,96 @@ async def test_api_filters_unnormalized_column(rmock, uploaded_csv_filters, clie
     assert jsonres['rows'] == [
         [1, 'first', '12:30', 1.0, 'value'],
     ]
+
+
+async def test_apify_analysed_format_response(rmock, csv_siren_siret, client):
+    content = csv_siren_siret.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert all(x in jsonres['columns_infos'] for x in ['id', 'siren', 'siret'])
+    assert all(x in jsonres['general_infos'] for x in [
+        'dataset_id',
+        'date_last_check',
+        'encoding',
+        'header_row_idx',
+        'nb_cells_missing',
+        'nb_columns',
+        'nb_vars_all_missing',
+        'nb_vars_with_missing',
+        'resource_id',
+        'separator',
+        'total_lines',
+        'filetype'
+    ])
+
+
+async def test_apify_analysed_csv_detective_check_format(rmock, csv_siren_siret, client):
+    content = csv_siren_siret.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns_infos']['siren']['format'] == 'siren'
+    assert jsonres['columns_infos']['siret']['format'] == 'siret'
+
+
+async def test_apify_analysed_pandas_profiling_check_numeric(rmock, csv_numeric, client):
+    content = csv_numeric.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns_infos']['value']['numeric_infos']['max'] == 12
+    assert jsonres['columns_infos']['value']['numeric_infos']['min'] == 2
+    assert jsonres['columns_infos']['value']['numeric_infos']['mean'] == 6
+
+
+async def test_apify_analysed_pandas_profiling_check_top(rmock, csv_top, client):
+    content = csv_top.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['columns_infos']['cat']['top_infos'][0]['value'] == 'a'
+
+
+async def test_apify_analysed_check_general_infos(rmock, csv_top, client):
+    content = csv_top.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['general_infos']['nb_columns'] == 2
+    assert jsonres['general_infos']['total_lines'] == 4
+    assert jsonres['general_infos']['separator'] == ';'
+    assert jsonres['general_infos']['header_row_idx'] == 0
+
+
+@pytest.mark.parametrize('extension', ['xls', 'xlsx'])
+async def test_no_analysis_when_excel(client, rmock, extension):
+    here = os.path.dirname(os.path.abspath(__file__))
+    content = open(f"{here}/samples/test.{extension}", 'rb')
+    mock_url = MOCK_CSV_URL.replace('.csv', extension)
+    mock_hash = get_hash(mock_url)
+    rmock.get(mock_url, body=content.read())
+    content.close()
+    await client.get(f"/apify?url={mock_url}&analysis=yes")
+    res = await client.get(f"/api/{mock_hash}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    print(jsonres)
+    assert jsonres['columns'] == ['rowid', 'col a', 'col b', 'col c']
+    assert jsonres['general_infos'] == { 'filetype': 'excel' }
+    assert jsonres['columns_infos'] == {}

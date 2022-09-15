@@ -1,16 +1,14 @@
 [bumpr]
-file = setup.py
-regex = \s{4}version='(?P<version>.+?)',
+file = pyproject.toml
+regex = version\s*=\s*"(?P<version>.+?)"
 vcs = git
 commit = true
 tag = true
 tag_format = v{version}
 push = true
-clean =
-    python setup.py clean
-    rm -rf *egg-info build dist
-tests = python -m pytest tests
-publish = python setup.py bdist_wheel
+clean = rm -rf *egg-info build dist
+tests = poetry run pytest tests
+publish = poetry build
 files =
     README.md
 

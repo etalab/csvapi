@@ -3,7 +3,7 @@ import traceback
 
 from quart import Quart, jsonify
 from quart_cors import cors
-from quart.exceptions import NotFound
+from werkzeug.exceptions import NotFound
 
 from csvapi.errors import APIError
 from csvapi.tableview import TableView
@@ -57,8 +57,8 @@ def handle_not_found(error):
 @app.errorhandler(APIError)
 def handle_api_error(error):
     error_id = handle_and_print_error(error)
-    app.logger.error(error.message)
     data = error.to_dict()
+    app.logger.error(f"{data.get('error')}: {data.get('details', '')}")
     data['error_id'] = error_id
     response = jsonify(data)
     response.status_code = error.status
