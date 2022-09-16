@@ -17,16 +17,11 @@ import json
 
 class ProfileView(MethodView):
 
-    def get_dataframe(self, db_info, dtype=None):
+    def get_dataframe(self, db_info):
         dsn = 'file:{}?immutable=1'.format(db_info['db_path'])
         conn = sqlite3.connect(dsn, uri=True)
         sql = 'SELECT * FROM [{}]'.format(db_info['table_name'])
-        try:
-            df = pd.read_sql_query(sql, con=conn, dtype=dtype)
-        # TODO: check if correct exception type
-        except ValueError:
-            df = pd.read_sql_query(sql, con=conn)
-            app.logger.debug('problem with python types')
+        df = pd.read_sql_query(sql, con=conn, dtype=dtype)
         return df
 
     def make_profile(self, db_info):
