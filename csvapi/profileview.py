@@ -21,7 +21,7 @@ class ProfileView(MethodView):
         dsn = 'file:{}?immutable=1'.format(db_info['db_path'])
         conn = sqlite3.connect(dsn, uri=True)
         sql = 'SELECT * FROM [{}]'.format(db_info['table_name'])
-        df = pd.read_sql_query(sql, con=conn, dtype=dtype)
+        df = pd.read_sql_query(sql, con=conn)
         return df
 
     def make_profile(self, db_info):
