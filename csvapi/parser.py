@@ -22,21 +22,14 @@ def detect_encoding(filepath):
         return chardet.detect(f.read()).get('encoding')
 
 
-def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT, agate_types=None):
+def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
     """Try first w/ sniffing and then w/o sniffing if it fails,
     and then again by forcing ';' delimiter w/o sniffing"""
-    if not agate_types:
-        kwargs = {
-            'sniff_limit': sniff_limit,
-            'encoding': encoding,
-            'column_types': agate_tester()
-        }
-    else:
-        kwargs = {
-            'sniff_limit': sniff_limit,
-            'encoding': encoding,
-            'column_types': agate_types
-        }
+    kwargs = {
+        'sniff_limit': sniff_limit,
+        'encoding': encoding,
+        'column_types': agate_tester()
+    }
     try:
         return agate.Table.from_csv(filepath, **kwargs)
     except ValueError:
@@ -46,17 +39,8 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT, agate_types=No
         except ValueError:
             kwargs['delimiter'] = ';'
             return agate.Table.from_csv(filepath, **kwargs)
-    except agate.CastError:
-        try:
-            kwargs = {
-                'sniff_limit': sniff_limit,
-                'encoding': encoding,
-                'column_types': agate_tester()
-            }
-            app.logger.warning('Types from csv-detective provoke errors, use of agate type tester instead.')
-            return agate.Table.from_csv(filepath, **kwargs)
-        except Exception as e:
-            app.logger.error('error casting %s', e)
+    except Exception as e:
+        app.logger.error('error casting %s', e)
 
 
 def from_excel(filepath, xlsx=False):
@@ -72,7 +56,7 @@ def to_sql(table, urlhash, storage):
     table.to_sql(db_info['dsn'], db_info['db_name'], overwrite=True)
 
 
-def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT, agate_types=None):
+def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT):
     is_csv = False
     file_type = detect_type(filepath)
     if 'application/vnd.ms-excel' in file_type:
@@ -81,7 +65,7 @@ def parse(filepath, urlhash, storage, encoding=None, sniff_limit=SNIFF_LIMIT, ag
         table = from_excel(filepath, xlsx=True)
     elif any([supported in file_type for supported in CSV_FILETYPES]):
         encoding = detect_encoding(filepath) if not encoding else encoding
-        table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit, agate_types=agate_types)
+        table = from_csv(filepath, encoding=encoding, sniff_limit=sniff_limit)
         is_csv = True
     else:
         raise Exception(f'Unsupported file type {file_type}')

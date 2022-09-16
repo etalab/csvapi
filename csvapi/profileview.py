@@ -10,8 +10,6 @@ from pandas_profiling import ProfileReport
 from csvapi.errors import APIError
 from csvapi.utils import get_db_info
 
-from csvapi.type_tester import convert_python_types
-
 from quart import current_app as app
 
 import json
@@ -67,9 +65,7 @@ class ProfileView(MethodView):
 
         if not path.exists():
             try:
-
-                python_types = convert_python_types(csv_detective_report['columns'])
-                df = self.get_dataframe(db_info, dtype=python_types)
+                df = self.get_dataframe(db_info)
                 profile = ProfileReport(
                     df, minimal=True,
                     vars=dict(num={"low_categorical_threshold": 0}),
