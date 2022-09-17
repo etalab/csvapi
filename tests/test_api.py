@@ -514,7 +514,6 @@ async def test_api_filters_less_greater_float(rmock, csv_numeric, client):
     res = await client.get(f"/api/{get_hash(url)}?value__greater=3&value__less=10")
     assert res.status_code == 200
     jsonres = await res.json
-    print(jsonres)
     assert jsonres['rows'] == [
         [2, 'b', 4],
     ]

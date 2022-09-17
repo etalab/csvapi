@@ -72,7 +72,6 @@ class TableView(MethodView):
             comparator = f_key.split('__')[1]
             column = f_key.split('__')[0]
             normalized_column = slugify(column, separator='_')
-            print(f_value)
             if comparator == 'exact':
                 wheres.append(f"[{column}] = :filter_value_{normalized_column}")
                 params[f'filter_value_{normalized_column}'] = f_value
@@ -90,7 +89,6 @@ class TableView(MethodView):
         if wheres:
             sql += ' WHERE '
             sql += ' AND '.join(wheres)
-        print(params)
         return sql, params
 
     async def data(self, db_info, export=False):
