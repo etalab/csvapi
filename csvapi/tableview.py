@@ -72,17 +72,25 @@ class TableView(MethodView):
             comparator = f_key.split('__')[1]
             column = f_key.split('__')[0]
             normalized_column = slugify(column, separator='_')
+            print(f_value)
             if comparator == 'exact':
                 wheres.append(f"[{column}] = :filter_value_{normalized_column}")
                 params[f'filter_value_{normalized_column}'] = f_value
             elif comparator == 'contains':
                 wheres.append(f"[{column}] LIKE :filter_value_{normalized_column}")
                 params[f'filter_value_{normalized_column}'] = f'%{f_value}%'
+            elif comparator == 'less':
+                wheres.append(f"[{column}] <= :filter_value_l_{normalized_column}")
+                params[f'filter_value_l_{normalized_column}'] = float(f_value)
+            elif comparator == 'greater':
+                wheres.append(f"[{column}] >= :filter_value_gt_{normalized_column}")
+                params[f'filter_value_gt_{normalized_column}'] = float(f_value)
             else:
                 app.logger.warning(f'Dropped unknown comparator in {f_key}')
         if wheres:
             sql += ' WHERE '
             sql += ' AND '.join(wheres)
+        print(params)
         return sql, params
 
     async def data(self, db_info, export=False):
