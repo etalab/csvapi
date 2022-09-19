@@ -13,12 +13,13 @@ from csvapi.profileview import ProfileView
 from csvapi.errors import APIError
 from csvapi.parser import parse
 from csvapi.utils import (
-    already_exists,
+    should_be_parsed,
     get_hash,
     check_csv_detective_report_structure,
     check_profile_report_structure,
     create_connection,
-    enrich_db_with_metadata
+    enrich_db_with_metadata,
+    get_dgv_infos
 )
 
 from csv_detective.explore_csv import routine
@@ -89,12 +90,15 @@ class ParseView(MethodView):
                     )
                     return
 
+                dataset_id, resource_id, resource_url = get_dgv_infos(url)
+
                 enrich_db_with_metadata(
                     urlhash,
                     csv_detective_report,
                     profile_report,
-                    None,
-                    None
+                    dataset_id,
+                    resource_id,
+                    resource_url
                 )
 
             if not is_csv and analysis and analysis == 'yes':
@@ -122,7 +126,7 @@ class ParseView(MethodView):
             raise APIError('Malformed url parameter.', status=400)
         urlhash = get_hash(url)
         analysis = request.args.get('analysis')
-        if not await already_exists(urlhash, analysis):
+        if await should_be_parsed(urlhash, analysis, url):
             try:
                 storage = app.config['DB_ROOT_DIR']
                 await self.do_parse(url=url,

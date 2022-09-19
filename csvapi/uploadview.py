@@ -5,7 +5,7 @@ from quart import request, current_app as app, jsonify
 from quart.views import MethodView
 
 from csvapi.errors import APIError
-from csvapi.utils import get_hash_bytes, already_exists
+from csvapi.utils import get_hash_bytes, should_be_parsed
 from csvapi.parser import parse
 
 
@@ -18,7 +18,7 @@ class UploadView(MethodView):
             raise APIError('Missing file.', status=400)
         content_hash = get_hash_bytes(_file.read())
         _file.seek(0)
-        if not already_exists(content_hash):
+        if should_be_parsed(content_hash):
             storage = app.config['DB_ROOT_DIR']
             sniff_limit = app.config.get('CSV_SNIFF_LIMIT')
             try:

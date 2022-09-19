@@ -7,6 +7,7 @@ from quart import current_app as app
 import sqlite3
 from datetime import datetime
 import pandas as pd
+import requests
 
 executor = None
 
@@ -36,19 +37,19 @@ def get_hash_bytes(to_hash):
     return hashlib.md5(to_hash).hexdigest()
 
 
-async def already_exists(urlhash, analysis=None):
+async def should_be_parsed(urlhash, analysis=None, url=None):
     '''
     Check if db exist. If analysis is requested, we check if general_infos table exist.
     If not, we bypass cache and do a new download of file to analyse it with pp and csv-detective.
     '''
     cache_enabled = app.config.get('CSV_CACHE_ENABLED')
     if not cache_enabled:
-        return False
+        return True
 
     db_exist = Path(get_db_info(urlhash)['db_path']).exists()
 
     if not analysis or analysis != 'yes':
-        return db_exist
+        return not db_exist
     else:
         conn = create_connection(get_db_info(urlhash)['db_path'])
         cur = conn.cursor()
@@ -56,9 +57,18 @@ async def already_exists(urlhash, analysis=None):
         cur.execute(sql)
         rows = cur.fetchall()
         if rows[0][0] != 0:
-            return True
-        else:
+            dataset_id, resource_id, resource_url = get_dgv_infos(url)
+            if resource_url is not None:
+                sql = 'SELECT resource_url FROM general_infos LIMIT 1'
+                cur.execute(sql)
+                rows = cur.fetchall()
+                if resource_url == rows[0][0]:
+                    return False
+                else:
+                    return True
             return False
+        else:
+            return True
 
 
 def create_connection(db_file):
@@ -129,7 +139,7 @@ def df_to_sql(obj, conn, name):
         df.to_sql(name, con=conn, if_exists='replace', index=False)
 
 
-def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, dataset_id, key):
+def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, dataset_id, key, resource_url):
     # Save to sql
     conn = create_connection(app.config['DB_ROOT_DIR'] + '/' + urlhash + '.db')
 
@@ -146,6 +156,7 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
             'date_last_check': datetime.today().strftime('%Y-%m-%d'),
             'dataset_id': dataset_id,
             'resource_id': key,
+            'resource_url': resource_url,
             'filetype': 'csv'
         }
     ]
@@ -221,3 +232,14 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
     df_to_sql(numeric_plot_infos, conn, 'numeric_plot_infos')
 
     conn.commit()
+
+
+def get_dgv_infos(url):
+    if "https://www.data.gouv.fr/fr/datasets/r/" not in url:
+        return None, None, None
+    rid = url.split('/')[-1]
+    r = requests.get('https://www.data.gouv.fr/api/2/datasets/resources/{}'.format(rid))
+    if r.json()['resource']:
+        return r.json()['dataset_id'], r.json()['resource']['id'], r.json()['resource']['url']
+    else:
+        return None, None, None
