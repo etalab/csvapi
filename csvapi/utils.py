@@ -172,8 +172,14 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
 
         if col in csv_detective_report['columns']:
             column_info['format'] = csv_detective_report['columns'][col]['format']
-            if csv_detective_report['columns'][col]['format'] in \
-                    ['siren', 'siret', 'code_postal', 'code_commune_insee', 'code_departement', 'code_region', 'tel_fr']:
+            if csv_detective_report['columns'][col]['format'] in [
+                    'siren',
+                    'siret',
+                    'code_postal',
+                    'code_commune_insee',
+                    'code_departement',
+                    'code_region',
+                    'tel_fr']:
                 column_info['type'] = 'Categorical'
 
         if (column_info['type'] == 'Categorical') & \
