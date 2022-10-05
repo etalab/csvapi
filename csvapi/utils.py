@@ -157,21 +157,30 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
     top_infos = []
     numeric_infos = []
     numeric_plot_infos = []
+
     for col in profile_report['variables']:
         column_info = {}
         column_info['name'] = col
-        column_info['format'] = csv_detective_report['columns'][col]['format']
         column_info['nb_distinct'] = profile_report['variables'][col]['n_distinct']
         column_info['is_unique'] = profile_report['variables'][col]['is_unique']
         column_info['nb_unique'] = profile_report['variables'][col]['n_unique']
         column_info['type'] = profile_report['variables'][col]['type']
         column_info['nb_missing'] = profile_report['variables'][col]['n_missing']
         column_info['count'] = profile_report['variables'][col]['count']
-        columns_infos.append(column_info)
+        column_info['format'] = 'unknown'
 
-        if csv_detective_report['columns'][col]['format'] in \
-                ['siren', 'siret', 'code_postal', 'code_commune_insee', 'code_departement', 'code_region', 'tel_fr']:
-            column_info['type'] = 'Categorical'
+        if col in csv_detective_report['columns']:
+            column_info['format'] = csv_detective_report['columns'][col]['format']
+            if csv_detective_report['columns'][col]['format'] in [
+                    'siren',
+                    'siret',
+                    'code_postal',
+                    'code_commune_insee',
+                    'code_departement',
+                    'code_region',
+                    'tel_fr']:
+                column_info['type'] = 'Categorical'
+        columns_infos.append(column_info)
 
         if (column_info['type'] == 'Categorical') & \
                 (len(profile_report['variables'][col]['value_counts_without_nan']) < 10):
