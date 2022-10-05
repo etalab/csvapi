@@ -518,6 +518,16 @@ async def test_api_filters_less_greater_float(rmock, csv_numeric, client):
         [2, 'b', 4],
     ]
 
+async def test_api_filters_less_greater_string_error(rmock, csv_numeric, client):
+    content = csv_numeric.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}")
+    res = await client.get(f"/api/{get_hash(url)}?value__greater=3&value__less=stan")
+    assert res.status_code == 400
+    jsonres = await res.json
+    assert jsonres == {"error":"Float value expected for less comparison.", "error_id": None , "ok":False}
+
 
 async def test_api_filters_unnormalized_column(rmock, uploaded_csv_filters, client):
     res = await client.get(f"/api/{MOCK_CSV_HASH_FILTERS}?id__contains=fir&another column__contains=value")
