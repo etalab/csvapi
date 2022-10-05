@@ -39,8 +39,6 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
         except ValueError:
             kwargs['delimiter'] = ';'
             return agate.Table.from_csv(filepath, **kwargs)
-    except Exception as e:
-        app.logger.error('error casting %s', e)
 
 
 def from_excel(filepath, xlsx=False):
