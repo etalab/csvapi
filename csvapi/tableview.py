@@ -78,6 +78,20 @@ class TableView(MethodView):
             elif comparator == 'contains':
                 wheres.append(f"[{column}] LIKE :filter_value_{normalized_column}")
                 params[f'filter_value_{normalized_column}'] = f'%{f_value}%'
+            elif comparator == 'less':
+                try:
+                    float_value = float(f_value)
+                except ValueError:
+                    raise APIError('Float value expected for less comparison.', status=400)
+                wheres.append(f"[{column}] <= :filter_value_l_{normalized_column}")
+                params[f'filter_value_l_{normalized_column}'] = float_value
+            elif comparator == 'greater':
+                try:
+                    float_value = float(f_value)
+                except ValueError:
+                    raise APIError('Float value expected for greater comparison.', status=400)
+                wheres.append(f"[{column}] >= :filter_value_gt_{normalized_column}")
+                params[f'filter_value_gt_{normalized_column}'] = float_value
             else:
                 app.logger.warning(f'Dropped unknown comparator in {f_key}')
         if wheres:
