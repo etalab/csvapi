@@ -161,7 +161,6 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
     for col in profile_report['variables']:
         column_info = {}
         column_info['name'] = col
-
         column_info['nb_distinct'] = profile_report['variables'][col]['n_distinct']
         column_info['is_unique'] = profile_report['variables'][col]['is_unique']
         column_info['nb_unique'] = profile_report['variables'][col]['n_unique']
