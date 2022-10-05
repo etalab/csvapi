@@ -35,7 +35,6 @@ class ParseView(MethodView):
         logger,
         sniff_limit,
         max_file_size,
-        agate_types=None,
         analysis=None
     ):
         logger.debug('* do_parse %s (%s)', urlhash, url)
@@ -63,8 +62,7 @@ class ParseView(MethodView):
                 urlhash,
                 storage,
                 encoding=encoding,
-                sniff_limit=sniff_limit,
-                agate_types=agate_types
+                sniff_limit=sniff_limit
             )
 
             if is_csv and analysis and analysis == 'yes':

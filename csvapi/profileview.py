@@ -10,8 +10,6 @@ from pandas_profiling import ProfileReport
 from csvapi.errors import APIError
 from csvapi.utils import get_db_info
 
-from csvapi.type_tester import convert_python_types
-
 from quart import current_app as app
 
 import json
@@ -19,16 +17,11 @@ import json
 
 class ProfileView(MethodView):
 
-    def get_dataframe(self, db_info, dtype=None):
+    def get_dataframe(self, db_info):
         dsn = 'file:{}?immutable=1'.format(db_info['db_path'])
         conn = sqlite3.connect(dsn, uri=True)
         sql = 'SELECT * FROM [{}]'.format(db_info['table_name'])
-        try:
-            df = pd.read_sql_query(sql, con=conn, dtype=dtype)
-        # TODO: check if correct exception type
-        except ValueError:
-            df = pd.read_sql_query(sql, con=conn)
-            app.logger.debug('problem with python types')
+        df = pd.read_sql_query(sql, con=conn)
         return df
 
     def make_profile(self, db_info):
@@ -67,9 +60,7 @@ class ProfileView(MethodView):
 
         if not path.exists():
             try:
-
-                python_types = convert_python_types(csv_detective_report['columns'])
-                df = self.get_dataframe(db_info, dtype=python_types)
+                df = self.get_dataframe(db_info)
                 profile = ProfileReport(
                     df, minimal=True,
                     vars=dict(num={"low_categorical_threshold": 0}),
