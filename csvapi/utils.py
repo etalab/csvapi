@@ -167,7 +167,7 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
         column_info['type'] = profile_report['variables'][col]['type']
         column_info['nb_missing'] = profile_report['variables'][col]['n_missing']
         column_info['count'] = profile_report['variables'][col]['count']
-        columns_infos.append(column_info)
+        column_info['format'] = 'unknown'
 
         if col in csv_detective_report['columns']:
             column_info['format'] = csv_detective_report['columns'][col]['format']
@@ -180,6 +180,8 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
                     'code_region',
                     'tel_fr']:
                 column_info['type'] = 'Categorical'
+        
+        columns_infos.append(column_info)
 
         if (column_info['type'] == 'Categorical') & \
                 (len(profile_report['variables'][col]['value_counts_without_nan']) < 10):
