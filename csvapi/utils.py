@@ -180,7 +180,6 @@ def enrich_db_with_metadata(urlhash, csv_detective_report, profile_report, datas
                     'code_region',
                     'tel_fr']:
                 column_info['type'] = 'Categorical'
-        
         columns_infos.append(column_info)
 
         if (column_info['type'] == 'Categorical') & \

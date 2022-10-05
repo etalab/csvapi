@@ -6,8 +6,6 @@ import cchardet as chardet
 from csvapi.utils import get_db_info
 from csvapi.type_tester import agate_tester
 
-from quart import current_app as app
-
 SNIFF_LIMIT = 4096
 CSV_FILETYPES = ('text/plain', 'application/csv', 'text/csv')
 
