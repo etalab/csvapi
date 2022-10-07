@@ -73,23 +73,26 @@ class TableView(MethodView):
             column = f_key.split('__')[0]
             normalized_column = slugify(column, separator='_')
             if comparator == 'exact':
-                wheres.append(f"[{column}] = :filter_value_{normalized_column}")
-                params[f'filter_value_{normalized_column}'] = f_value
+                wheres.append("[{}] = '{}'".format(column, f_value))
             elif comparator == 'contains':
-                wheres.append(f"[{column}] LIKE :filter_value_{normalized_column}")
-                params[f'filter_value_{normalized_column}'] = f'%{f_value}%'
+                wheres.append("[{}] LIKE '%{}%'".format(column, f_value))
             elif comparator == 'less':
-                wheres.append(f"[{column}] <= :filter_value_l_{normalized_column}")
-                params[f'filter_value_l_{normalized_column}'] = float(f_value)
+                wheres.append("[{}] <= {}".format(column, float(f_value)))
             elif comparator == 'greater':
-                wheres.append(f"[{column}] >= :filter_value_gt_{normalized_column}")
-                params[f'filter_value_gt_{normalized_column}'] = float(f_value)
+                wheres.append("[{}] >= {}".format(column, float(f_value)))
+            elif comparator == 'after':
+                wheres.append("lower([{}]) > lower('{}')".format(column, f_value))
+            elif comparator == 'before':
+                wheres.append("lower([{}]) < lower('{}')".format(column, f_value))
+            elif comparator == 'different':
+                wheres.append("[{}] != '{}'".format(column, f_value))
             else:
                 app.logger.warning(f'Dropped unknown comparator in {f_key}')
         if wheres:
             sql += ' WHERE '
             sql += ' AND '.join(wheres)
         return sql, params
+
 
     async def data(self, db_info, export=False):
         limit = request.args.get('_size', ROWS_LIMIT) if not export else -1
@@ -108,6 +111,7 @@ class TableView(MethodView):
         cols = 'rowid, *' if rowid else '*'
         sql = 'SELECT {} FROM [{}]'.format(cols, db_info['table_name'])
         sql, params = self.add_filters_to_sql(sql, filters)
+
         if sort:
             sql += f' ORDER BY [{sort}]'
         elif sort_desc:
@@ -141,12 +145,7 @@ class TableView(MethodView):
 
         return res
 
-    async def get(self, urlhash):
-        db_info = get_db_info(urlhash)
-        p = Path(db_info['db_path'])
-        if not p.exists():
-            raise APIError('Database has probably been removed.', status=404)
-
+    async def rawdata(self, db_info):
         start = time.time()
         try:
             data = await self.data(db_info)
@@ -180,6 +179,79 @@ class TableView(MethodView):
             res['total'] = data['total']
 
         return jsonify(res)
+
+    async def vizdata(self, db_info):
+        start = time.time()
+        res = {}
+        try:
+            x = request.args.get('viz_axis_x', None)
+            y = request.args.get('viz_axis_y', None)
+            xtop = request.args.get('viz_axis_x_top', None)
+            op = request.args.get('viz_op', None)
+            gb = request.args.get('viz_axis_x_substring', None)
+            gb1 = ''
+            gb2 = ''
+            if gb is not None:
+                gb1 = 'SUBSTR('
+                gb2 = ', 1, ' + gb + ')'
+            
+            filters = []
+            for key, value in request.args.items():
+                if not key.startswith('_') and '__' in key:
+                    filters.append((key, value))
+
+            sql = 'SELECT * FROM [{}]'.format(db_info['table_name'])
+            sql, params = self.add_filters_to_sql(sql, filters)
+
+            if(x and op in ['count', 'min', 'max', 'sum', 'avg']):
+                if op == 'count':
+                    y = '*'
+                else:
+                    y = '[' + y + ']'
+                
+                if not xtop:
+                    sql = 'SELECT {}({}) as {}, {}[{}]{} FROM ({}) GROUP BY {}[{}]{}'.format(op, y, op, gb1, x, gb2, sql, gb1, x, gb2)
+                else:
+                    sql = 'SELECT {}({}) as {}, {}t.[{}]{} FROM ({}) t JOIN (SELECT {}({}) as {}, {}[{}]{} FROM ({}) GROUP BY {}[{}]{} ORDER BY {} DESC LIMIT {}) t2 ON t.{}[{}]{} = {}t2.[{}]{} GROUP BY {}t.[{}]{}'.format(op, y, op, gb1, x, gb2, sql, op, y, op, gb1, x, gb2, sql, gb1, x, gb2, op, xtop, gb1, x, gb2, gb1, x, gb2, gb1, x, gb2)
+                
+                print(sql)
+                rows, description = await self.execute(sql, db_info, params=None)
+                columns = [r[0] for r in description]
+                resx = []
+                resy = []
+                cpt = 0
+                for row in rows:
+                    resx.append(row[1])
+                    resy.append(row[0])
+                res['resx'] = resx
+                res['resy'] = resy
+
+
+                
+
+        except (sqlite3.OperationalError, sqlite3.IntegrityError) as e:
+            raise APIError('Error selecting data', status=400, payload=dict(details=str(e)))
+        
+        end = time.time()
+
+        res['ok'] = True,
+        res['query_ms'] = (end - start) * 1000
+
+        return jsonify(res)
+
+    async def get(self, urlhash):
+        db_info = get_db_info(urlhash)
+        p = Path(db_info['db_path'])
+        if not p.exists():
+            raise APIError('Database has probably been removed.', status=404)
+
+        
+        viz = request.args.get('_viz', None)
+        if viz and viz == 'yes':
+            return await self.vizdata(db_info)
+        else:
+            return await self.rawdata(db_info)
+        
 
     async def general_infos(self, db_info):
         params = {}
