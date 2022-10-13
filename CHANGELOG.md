@@ -4,6 +4,12 @@
 
 - Nothing yet
 
+## 2.1.0 (2022-10-13)
+
+* Fix bugs [#110](https://github.com/etalab/csvapi/pull/110) and [#111](https://github.com/etalab/csvapi/pull/111)
+* Add endpoint API greater_than or less_than int or float value [#109](https://github.com/etalab/csvapi/pull/109)
+* Update version csv-detective [#119](https://github.com/etalab/csvapi/pull/119)
+
 ## 2.0.0 (2022-09-15)
 
 - [BREAKING] Migrate to python >= 3.9 [#104](https://github.com/etalab/csvapi/pull/104)
