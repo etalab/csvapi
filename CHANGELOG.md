@@ -4,6 +4,10 @@
 
 - Nothing yet
 
+## 2.1.1 (2022-10-25)
+
+* Fix bugs [#126](https://github.com/etalab/csvapi/pull/126) with json files
+
 ## 2.1.0 (2022-10-13)
 
 * Fix bugs [#110](https://github.com/etalab/csvapi/pull/110) and [#111](https://github.com/etalab/csvapi/pull/111)
