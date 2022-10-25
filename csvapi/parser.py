@@ -33,7 +33,7 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
         'column_types': agate_tester()
     }
 
-    with open(filepath, 'r') as fp:
+    with open(filepath, 'rb') as fp:
         if len(fp.readlines()) < 2:
             raise ValueError
 
@@ -41,11 +41,7 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
         return agate.Table.from_csv(filepath, **kwargs)
     except ValueError:
         try:
-            kwargs = {
-                'sniff_limit': sniff_limit * 10,
-                'encoding': encoding,
-                'column_types': agate_tester()
-            }
+            kwargs.pop('sniff_limit')
             return agate.Table.from_csv(filepath, **kwargs)
         except ValueError:
             kwargs['delimiter'] = ';'
