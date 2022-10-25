@@ -5,6 +5,10 @@ import cchardet as chardet
 
 from csvapi.utils import get_db_info
 from csvapi.type_tester import agate_tester
+import logging
+
+logging.captureWarnings(True)
+logging.getLogger("py.warnings").setLevel(logging.ERROR)
 
 SNIFF_LIMIT = 4096
 CSV_FILETYPES = ('text/plain', 'application/csv', 'text/csv')
@@ -28,11 +32,20 @@ def from_csv(filepath, encoding='utf-8', sniff_limit=SNIFF_LIMIT):
         'encoding': encoding,
         'column_types': agate_tester()
     }
+
+    with open(filepath, 'r') as fp:
+        if len(fp.readlines()) < 2:
+            raise ValueError
+
     try:
         return agate.Table.from_csv(filepath, **kwargs)
     except ValueError:
         try:
-            kwargs.pop('sniff_limit')
+            kwargs = {
+                'sniff_limit': sniff_limit * 10,
+                'encoding': encoding,
+                'column_types': agate_tester()
+            }
             return agate.Table.from_csv(filepath, **kwargs)
         except ValueError:
             kwargs['delimiter'] = ';'

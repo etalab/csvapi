@@ -121,6 +121,11 @@ b<sep>522816651<sep>52281665100056<sep>15:50\r\r
 """
 
 
+@pytest.fixture
+def one_line_json_file():
+    return '''{ "property1": 1, "property2": 2}'''
+
+
 def random_url():
     return f"https://example.com/{uuid.uuid4()}.csv"
 
@@ -630,3 +635,11 @@ async def test_no_analysis_when_excel(client, rmock, extension):
     assert jsonres['columns'] == ['rowid', 'col a', 'col b', 'col c']
     assert jsonres['general_infos'] == { 'filetype': 'excel' }
     assert jsonres['columns_infos'] == {}
+
+
+async def test_fail_one_line_json_file(rmock, one_line_json_file, client):
+    content = one_line_json_file
+    url = random_url()
+    rmock.get(url, body=content)
+    res = await client.get(f"/apify?url={url}&analysis=yes")
+    assert res.status_code == 500
