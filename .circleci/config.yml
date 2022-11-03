@@ -2,9 +2,6 @@
 version: 2.1
 
 parameters:
-  python-version:
-    type: string
-    default: "3.9"
   python-module:
     type: string
     default: "csvapi"
@@ -18,7 +15,7 @@ parameters:
 jobs:
   install:
     docker:
-      - image: python:<< pipeline.parameters.python-version >>
+      - image: etalab/csvapi-circle
     steps:
       - checkout
       - run:
