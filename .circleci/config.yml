@@ -18,7 +18,7 @@ parameters:
 jobs:
   install:
     docker:
-      - image: cimg/python:<< pipeline.parameters.python-version >>
+      - image: python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
       - run:
