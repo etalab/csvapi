@@ -20,7 +20,7 @@ class CSVAPIProfileReport:
         df = pd.read_sql_query(sql, con=conn)
         return df
 
-    async def get_minimal_profile(self, urlhash: str) -> None:
+    async def get_minimal_profile(self, urlhash: str) -> dict:
         db_info = get_db_info(urlhash)
         p = Path(db_info['db_path'])
         if not p.exists():
