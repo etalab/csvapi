@@ -32,6 +32,8 @@ class CSVAPIProfileReport:
                 df, minimal=True,
                 vars=dict(num={"low_categorical_threshold": 0}),
                 plot=dict(histogram={"bins": 10}),
+                # this disables the ThreadPoolExecutor in pandas-profiling
+                # remove it or set it to 0 to use the number of CPUs a pool size
                 pool_size=1,
                 progress_bar=False,
             )
