@@ -42,7 +42,6 @@ def serve(dbs, host, port, debug, reload, cache, ssl_cert, ssl_key):
         'DB_ROOT_DIR': dbs,
         'CSV_CACHE_ENABLED': cache,
         'DEBUG': debug,
-        # TODO this probably does not exist in Quart
         'RESPONSE_TIMEOUT': RESPONSE_TIMEOUT,
     })
     app.run(host=host, port=port, debug=debug, use_reloader=reload, ssl=ssl_context)
