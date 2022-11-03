@@ -1,5 +1,4 @@
 DB_ROOT_DIR = './dbs'
-PROFILES_ROOT_DIR = './profiles'
 CSV_CACHE_ENABLED = True
 MAX_WORKERS = 3
 DEBUG = True

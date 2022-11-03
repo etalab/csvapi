@@ -8,10 +8,9 @@ import pandas as pd
 from quart import request, jsonify, current_app as app
 from quart.views import MethodView
 
-from csvapi.profileview import ProfileView
-
 from csvapi.errors import APIError
 from csvapi.parser import parse
+from csvapi.profiling import CSVAPIProfileReport
 from csvapi.utils import (
     already_exists,
     get_hash,
@@ -74,12 +73,7 @@ class ParseView(MethodView):
                     )
                     return
 
-                profileViewInstance = ProfileView()
-                profile_report = await profileViewInstance.get_minimal_profile(
-                    profileViewInstance,
-                    urlhash=urlhash,
-                    csv_detective_report=csv_detective_report
-                )
+                profile_report = await CSVAPIProfileReport().get_minimal_profile(urlhash)
 
                 if not check_profile_report_structure(profile_report):
                     logger.error(
@@ -96,7 +90,7 @@ class ParseView(MethodView):
                 )
 
             if not is_csv and analysis and analysis == 'yes':
-                conn = create_connection(app.config['DB_ROOT_DIR'] + '/' + urlhash + '.db')
+                conn = create_connection(f"{app.config['DB_ROOT_DIR']}/{urlhash}.db")
                 general_infos = [
                     {
                         'filetype': 'excel'
@@ -139,5 +133,4 @@ class ParseView(MethodView):
         return jsonify({
             'ok': True,
             'endpoint': f"{scheme}://{request.host}/api/{urlhash}",
-            'profile_endpoint': f"{scheme}://{request.host}/profile/{urlhash}",
         })
