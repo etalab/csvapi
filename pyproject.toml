@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "csvapi"
-version = "2.1.1"
+version = "2.1.2.dev"
 description = "An instant JSON API for your CSV"
 authors = ["Opendatateam <opendatateam@data.gouv.fr>"]
 license = "MIT"
