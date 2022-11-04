@@ -10,14 +10,12 @@ from csvapi.tableview import TableView
 from csvapi.exportview import ExportView
 from csvapi.uploadview import UploadView
 from csvapi.parseview import ParseView
-from csvapi.profileview import ProfileView
 from csvapi.security import filter_referrers
 
 app = Quart(__name__)
 app = cors(app, allow_origin='*')
 
 app.add_url_rule('/api/<urlhash>', view_func=TableView.as_view('table'))
-app.add_url_rule('/profile/<urlhash>', view_func=ProfileView.as_view('profile'))
 app.add_url_rule('/api/<urlhash>/export', view_func=ExportView.as_view('export'))
 app.add_url_rule('/apify', view_func=ParseView.as_view('parse'))
 app.add_url_rule('/upload', view_func=UploadView.as_view('upload'))

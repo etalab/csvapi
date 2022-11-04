@@ -2,7 +2,8 @@
 
 ## Current (in progress)
 
-- Nothing yet
+- Remove profile endpoint, disable thread pool for profiling [#135](https://github.com/etalab/csvapi/pull/135)
+- Fix tests by using a custom docker image [#135](https://github.com/etalab/csvapi/pull/135)
 
 ## 2.1.1 (2022-10-25)
 

@@ -28,14 +28,12 @@ def cli():
               help='Automatically reload if code change detected')
 @click.option('--cache/--no-cache', default=True,
               help='Do not parse CSV again if DB already exists')
-@click.option('-w', '--max-workers', default=3,
-              help='Max number of ThreadPoolExecutor workers')
 @click.option('--ssl-cert', default=None,
               help='Path to SSL certificate')
 @click.option('--ssl-key', default=None,
               help='Path to SSL key')
 @cli.command()
-def serve(dbs, host, port, debug, reload, cache, max_workers, ssl_cert, ssl_key):
+def serve(dbs, host, port, debug, reload, cache, ssl_cert, ssl_key):
     ssl_context = None
     if ssl_cert and ssl_key:
         ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
@@ -43,9 +41,7 @@ def serve(dbs, host, port, debug, reload, cache, max_workers, ssl_cert, ssl_key)
     app.config.update({
         'DB_ROOT_DIR': dbs,
         'CSV_CACHE_ENABLED': cache,
-        'MAX_WORKERS': max_workers,
         'DEBUG': debug,
-        # TODO this probably does not exist in Quart
         'RESPONSE_TIMEOUT': RESPONSE_TIMEOUT,
     })
     app.run(host=host, port=port, debug=debug, use_reloader=reload, ssl=ssl_context)

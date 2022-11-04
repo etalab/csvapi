@@ -2,9 +2,9 @@
 version: 2.1
 
 parameters:
-  python-version:
+  docker-image:
     type: string
-    default: "3.9"
+    default: "etalab/csvapi-circle"
   python-module:
     type: string
     default: "csvapi"
@@ -18,7 +18,7 @@ parameters:
 jobs:
   install:
     docker:
-      - image: cimg/python:<< pipeline.parameters.python-version >>
+      - image: << pipeline.parameters.docker-image >>
     steps:
       - checkout
       - run:
@@ -50,7 +50,7 @@ jobs:
 
   lint:
     docker:
-      - image: cimg/python:<< pipeline.parameters.python-version >>
+      - image: << pipeline.parameters.docker-image >>
     steps:
       - attach_workspace:
           at: .
@@ -60,7 +60,7 @@ jobs:
 
   tests:
     docker:
-      - image: cimg/python:<< pipeline.parameters.python-version >>
+      - image: << pipeline.parameters.docker-image >>
     steps:
       - attach_workspace:
           at: .
@@ -73,7 +73,7 @@ jobs:
 
   build:
     docker:
-      - image: cimg/python:<< pipeline.parameters.python-version >>
+      - image: << pipeline.parameters.docker-image >>
     steps:
       - attach_workspace:
           at: .
@@ -98,7 +98,7 @@ jobs:
 
   publish:
     docker:
-      - image: cimg/python:<< pipeline.parameters.python-version >>
+      - image: << pipeline.parameters.docker-image >>
     steps:
       - attach_workspace:
           at: .
