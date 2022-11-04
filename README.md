@@ -35,7 +35,6 @@ Options:
     --ssl-key TEXT             Path to SSL key
     --ssl-cert TEXT            Path to SSL certificate
     --cache / --no-cache       Do not parse CSV again if DB already exists
-    -w, --max-workers INTEGER  Max number of ThreadPoolExecutor workers
     --reload                   Automatically reload if code change detected
     --debug                    Enable debug mode - useful for development
     -p, --port INTEGER         port for server, defaults to 8001
