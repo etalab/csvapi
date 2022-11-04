@@ -1,6 +1,6 @@
 # Changelog
 
-## Current (in progress)
+## 2.2.0 (2022-11-04)
 
 - Remove profile endpoint, disable thread pool for profiling [#135](https://github.com/etalab/csvapi/pull/135)
 - Fix tests by using a custom docker image [#135](https://github.com/etalab/csvapi/pull/135)
