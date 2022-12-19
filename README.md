@@ -87,7 +87,7 @@ You can ask an analysis of the csv file (csv detective and pandas profiling chec
 
 **default**: no refresh
 
-You can force a refresh of the sqlite db creation by specifying `&analysis=yes` in endpoint.
+You can force a refresh of the sqlite db creation by specifying `&refresh=yes` in endpoint.
 
 ### Data API
 
