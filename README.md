@@ -77,6 +77,17 @@ Some parameters can be used in the query string.
 
 You can force an encoding (e.g. `utf-8`) using this parameter, instead of relying on the automatic detection.
 
+#### `analysis`
+
+**default**: no analysis
+
+You can ask an analysis of the csv file (csv detective and pandas profiling checks) by specifying `&analysis=yes` in endpoint.
+
+#### `refresh`
+
+**default**: no refresh
+
+You can force a refresh of the sqlite db creation by specifying `&refresh=yes` in endpoint.
 
 ### Data API
 
