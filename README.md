@@ -1,3 +1,8 @@
+> [!IMPORTANT]  
+> This repository is archived.
+> 
+> If you are in the specific context of [udata](https://github.com/opendatateam/udata), you can take a look at [udata-hydra](https://github.com/datagouv/hydra) and [api-tabular](https://github.com/datagouv/api-tabular).
+
 # csvapi
 
 "Instantly" publish an API for a CSV hosted anywhere on the internet. Also supports Excel files.
