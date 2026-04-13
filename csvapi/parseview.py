@@ -108,13 +108,14 @@ class ParseView(MethodView):
         app.logger.debug('* Starting ParseView.get')
         url = request.args.get('url')
         encoding = request.args.get('encoding')
+        refresh = request.args.get('refresh')
         if not url:
             raise APIError('Missing url query string variable.', status=400)
         if not validators.url(url):
             raise APIError('Malformed url parameter.', status=400)
         urlhash = get_hash(url)
         analysis = request.args.get('analysis')
-        if not await already_exists(urlhash, analysis):
+        if not await already_exists(urlhash, analysis) or refresh == 'yes':
             try:
                 storage = app.config['DB_ROOT_DIR']
                 await self.do_parse(url=url,

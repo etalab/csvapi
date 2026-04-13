@@ -159,6 +159,18 @@ async def test_apify(rmock, csv, client):
     assert db_path.exists()
 
 
+async def test_apify_refresh(rmock, csv, client):
+    rmock.get(MOCK_CSV_URL, status=200, body=csv.encode('utf-8'))
+    res = await client.get(f"/apify?url={MOCK_CSV_URL}&refresh=yes")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['ok']
+    assert 'endpoint' in jsonres
+    assert f"/api/{MOCK_CSV_HASH}" in jsonres['endpoint']
+    db_path = Path(DB_ROOT_DIR) / f"{MOCK_CSV_HASH}.db"
+    assert db_path.exists()
+
+
 async def test_apify_not_found(rmock, csv, client):
     rmock.get(MOCK_CSV_URL, status=404)
     res = await client.get(f"/apify?url={MOCK_CSV_URL}")
@@ -610,6 +622,20 @@ async def test_apify_analysed_check_general_infos(rmock, csv_top, client):
     url = random_url()
     rmock.get(url, body=content)
     await client.get(f"/apify?url={url}&analysis=yes")
+    res = await client.get(f"/api/{get_hash(url)}")
+    assert res.status_code == 200
+    jsonres = await res.json
+    assert jsonres['general_infos']['nb_columns'] == 2
+    assert jsonres['general_infos']['total_lines'] == 4
+    assert jsonres['general_infos']['separator'] == ';'
+    assert jsonres['general_infos']['header_row_idx'] == 0
+
+
+async def test_apify_analysis_and_refresh(rmock, csv_top, client):
+    content = csv_top.replace('<sep>', ';').encode('utf-8')
+    url = random_url()
+    rmock.get(url, body=content)
+    await client.get(f"/apify?url={url}&analysis=yes&refresh=yes")
     res = await client.get(f"/api/{get_hash(url)}")
     assert res.status_code == 200
     jsonres = await res.json
